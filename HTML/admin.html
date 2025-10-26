@@ -461,9 +461,14 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-submit">
-                        <i class="fas fa-plus-circle"></i> Agregar Producto
-                    </button>
+                    <div style="display: flex; gap: 15px;">
+                        <button type="submit" class="btn-submit" style="flex: 1;">
+                            <i class="fas fa-plus-circle"></i> AGREGAR PRODUCTO
+                        </button>
+                        <button type="button" onclick="cancelarEdicion()" id="btnCancelar" class="btn-submit" style="flex: 1; background: var(--crl-gray); border-color: var(--crl-gray); display: none;">
+                            <i class="fas fa-times"></i> CANCELAR
+                        </button>
+                    </div>
                 </form>
             </div>
 
@@ -711,14 +716,37 @@
                 esAmericano: formData.get('esAmericano') === 'on' // 🇺🇸 Americano
             };
             
-            if (Productos.agregarProducto(producto)) {
-                alert('✅ Producto agregado exitosamente!');
-                this.reset();
-                document.getElementById('previewContainer').innerHTML = '<i class="fas fa-image" style="font-size: 40px; color: var(--crl-light-gray);"></i>';
-                document.getElementById('imagenBase64').value = '';
-                actualizarEstadisticas();
+            // Verificar si estamos editando o agregando
+            if (productoEnEdicion) {
+                // MODO EDICIÓN: Actualizar producto existente
+                producto.id = productoEnEdicion; // Mantener el mismo ID
+                
+                if (Productos.actualizarProducto(productoEnEdicion, producto)) {
+                    alert('✅ Producto actualizado exitosamente!');
+                    cancelarEdicion();
+                    
+                    // Cambiar a la pestaña de gestionar para ver el resultado
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    document.querySelector('[data-tab="gestionar"]').classList.add('active');
+                    document.getElementById('tab-gestionar').classList.add('active');
+                    
+                    cargarTablaProductos();
+                    actualizarEstadisticas();
+                } else {
+                    alert('❌ Error al actualizar el producto');
+                }
             } else {
-                alert('❌ Error al agregar el producto');
+                // MODO AGREGAR: Crear nuevo producto
+                if (Productos.agregarProducto(producto)) {
+                    alert('✅ Producto agregado exitosamente!');
+                    this.reset();
+                    document.getElementById('previewContainer').innerHTML = '<i class="fas fa-image" style="font-size: 40px; color: var(--crl-light-gray);"></i>';
+                    document.getElementById('imagenBase64').value = '';
+                    actualizarEstadisticas();
+                } else {
+                    alert('❌ Error al agregar el producto');
+                }
             }
         });
 
@@ -733,34 +761,85 @@
             }
         }
 
-        // Editar producto (permite cambiar stock y precio)
+        // Variable para guardar el ID del producto en edición
+        let productoEnEdicion = null;
+
+        // Editar producto (permite cambiar TODA la información)
         function editarProducto(id) {
             const producto = Productos.obtenerProductoPorId(id);
-            if (!producto) return;
-            
-            const nuevoStock = prompt(`Editar Stock de "${producto.nombre}"\n\nStock actual: ${producto.stock}\nNuevo stock:`, producto.stock);
-            
-            if (nuevoStock !== null && nuevoStock !== '') {
-                const stockInt = parseInt(nuevoStock);
-                
-                if (isNaN(stockInt) || stockInt < 0) {
-                    alert('❌ Stock inválido');
-                    return;
-                }
-                
-                if (Productos.actualizarProducto(id, { stock: stockInt })) {
-                    alert('✅ Stock actualizado correctamente');
-                    
-                    // Registrar movimiento manual de stock
-                    const diferencia = stockInt - producto.stock;
-                    if (diferencia !== 0) {
-                        Productos.actualizarStock(id, -diferencia); // Negativo porque actualizarStock resta
-                    }
-                    
-                    cargarTablaProductos();
-                    actualizarEstadisticas();
-                }
+            if (!producto) {
+                alert('❌ Producto no encontrado');
+                return;
             }
+            
+            // Guardar el ID del producto en edición
+            productoEnEdicion = id;
+            
+            // Cambiar a la pestaña de agregar producto
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector('[data-tab="agregar"]').classList.add('active');
+            document.getElementById('tab-agregar').classList.add('active');
+            
+            // Cambiar el título del formulario
+            const titulo = document.querySelector('#formAgregarProducto h3');
+            titulo.innerHTML = '<i class="fas fa-edit"></i> Editar Producto';
+            
+            // Llenar el formulario con los datos del producto
+            document.getElementById('nombre').value = producto.nombre || '';
+            document.getElementById('categoria').value = producto.categoria || '';
+            document.getElementById('precio').value = producto.precio || '';
+            document.getElementById('precioAnterior').value = producto.precioAnterior || '';
+            document.getElementById('stock').value = producto.stock || '';
+            document.getElementById('rating').value = producto.rating || 4.5;
+            document.getElementById('bateria').value = producto.bateria || '';
+            document.getElementById('colores').value = producto.colores ? producto.colores.join(', ') : '';
+            document.getElementById('memorias').value = producto.memorias ? producto.memorias.join(', ') : '';
+            document.getElementById('descripcion').value = producto.descripcion || '';
+            
+            // Llenar checkboxes
+            document.getElementById('esNuevo').checked = producto.esNuevo || false;
+            document.getElementById('enOferta').checked = producto.enOferta || false;
+            document.getElementById('esAmericano').checked = producto.esAmericano || false;
+            
+            // Mostrar la imagen actual
+            if (producto.imagen) {
+                document.getElementById('imagenBase64').value = producto.imagen;
+                document.getElementById('previewContainer').innerHTML = `
+                    <img src="${producto.imagen}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                `;
+            }
+            
+            // Cambiar el texto del botón
+            const btnSubmit = document.querySelector('#formAgregarProducto .btn-submit');
+            btnSubmit.innerHTML = '<i class="fas fa-save"></i> GUARDAR CAMBIOS';
+            btnSubmit.style.background = '#ff9800';
+            btnSubmit.style.borderColor = '#ff9800';
+            
+            // Mostrar botón de cancelar
+            document.getElementById('btnCancelar').style.display = 'block';
+            
+            // Scroll al formulario
+            document.getElementById('tab-agregar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // Función para cancelar edición y limpiar formulario
+        function cancelarEdicion() {
+            productoEnEdicion = null;
+            document.getElementById('formAgregarProducto').reset();
+            document.getElementById('previewContainer').innerHTML = '<i class="fas fa-image" style="font-size: 40px; color: var(--crl-light-gray);"></i>';
+            document.getElementById('imagenBase64').value = '';
+            
+            const titulo = document.querySelector('#formAgregarProducto h3');
+            titulo.innerHTML = '<i class="fas fa-plus"></i> Agregar Nuevo Producto';
+            
+            const btnSubmit = document.querySelector('#formAgregarProducto .btn-submit');
+            btnSubmit.innerHTML = '<i class="fas fa-plus-circle"></i> AGREGAR PRODUCTO';
+            btnSubmit.style.background = 'var(--crl-black)';
+            btnSubmit.style.borderColor = 'var(--crl-black)';
+            
+            // Ocultar botón de cancelar
+            document.getElementById('btnCancelar').style.display = 'none';
         }
 
         // Cargar historial de ventas
