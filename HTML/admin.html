@@ -572,8 +572,18 @@
             document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
             
             // Mostrar tab seleccionado
-            document.getElementById('tab-' + tab).classList.add('active');
-            event.target.classList.add('active');
+            const tabContent = document.getElementById('tab-' + tab);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+            
+            // Activar el botón correspondiente (buscar por el onclick)
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => {
+                if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${tab}'`)) {
+                    btn.classList.add('active');
+                }
+            });
             
             // Cargar datos según el tab
             switch(tab) {
@@ -726,13 +736,12 @@
                     cancelarEdicion();
                     
                     // Cambiar a la pestaña de gestionar para ver el resultado
-                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                    document.querySelector('[data-tab="gestionar"]').classList.add('active');
-                    document.getElementById('tab-gestionar').classList.add('active');
+                    cambiarTab('gestionar');
                     
-                    cargarTablaProductos();
-                    actualizarEstadisticas();
+                    setTimeout(() => {
+                        cargarTablaProductos();
+                        actualizarEstadisticas();
+                    }, 100);
                 } else {
                     alert('❌ Error al actualizar el producto');
                 }
@@ -775,52 +784,80 @@
             // Guardar el ID del producto en edición
             productoEnEdicion = id;
             
-            // Cambiar a la pestaña de agregar producto
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.querySelector('[data-tab="agregar"]').classList.add('active');
-            document.getElementById('tab-agregar').classList.add('active');
+            // Cambiar a la pestaña de agregar producto usando la función existente
+            cambiarTab('agregar');
             
-            // Cambiar el título del formulario
-            const titulo = document.querySelector('#formAgregarProducto h3');
-            titulo.innerHTML = '<i class="fas fa-edit"></i> Editar Producto';
+            // Esperar un momento para que la pestaña se active
+            setTimeout(() => {
+                // Cambiar el título del formulario
+                const titulo = document.querySelector('#formAgregarProducto h3');
+                if (titulo) {
+                    titulo.innerHTML = '<i class="fas fa-edit"></i> Editar Producto';
+                }
             
-            // Llenar el formulario con los datos del producto
-            document.getElementById('nombre').value = producto.nombre || '';
-            document.getElementById('categoria').value = producto.categoria || '';
-            document.getElementById('precio').value = producto.precio || '';
-            document.getElementById('precioAnterior').value = producto.precioAnterior || '';
-            document.getElementById('stock').value = producto.stock || '';
-            document.getElementById('rating').value = producto.rating || 4.5;
-            document.getElementById('bateria').value = producto.bateria || '';
-            document.getElementById('colores').value = producto.colores ? producto.colores.join(', ') : '';
-            document.getElementById('memorias').value = producto.memorias ? producto.memorias.join(', ') : '';
-            document.getElementById('descripcion').value = producto.descripcion || '';
-            
-            // Llenar checkboxes
-            document.getElementById('esNuevo').checked = producto.esNuevo || false;
-            document.getElementById('enOferta').checked = producto.enOferta || false;
-            document.getElementById('esAmericano').checked = producto.esAmericano || false;
-            
-            // Mostrar la imagen actual
-            if (producto.imagen) {
-                document.getElementById('imagenBase64').value = producto.imagen;
-                document.getElementById('previewContainer').innerHTML = `
-                    <img src="${producto.imagen}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                `;
-            }
-            
-            // Cambiar el texto del botón
-            const btnSubmit = document.querySelector('#formAgregarProducto .btn-submit');
-            btnSubmit.innerHTML = '<i class="fas fa-save"></i> GUARDAR CAMBIOS';
-            btnSubmit.style.background = '#ff9800';
-            btnSubmit.style.borderColor = '#ff9800';
-            
-            // Mostrar botón de cancelar
-            document.getElementById('btnCancelar').style.display = 'block';
-            
-            // Scroll al formulario
-            document.getElementById('tab-agregar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Llenar el formulario con los datos del producto
+                const nombre = document.getElementById('nombre');
+                const categoria = document.getElementById('categoria');
+                const precio = document.getElementById('precio');
+                const precioAnterior = document.getElementById('precioAnterior');
+                const stock = document.getElementById('stock');
+                const rating = document.getElementById('rating');
+                const bateria = document.getElementById('bateria');
+                const colores = document.getElementById('colores');
+                const memorias = document.getElementById('memorias');
+                const descripcion = document.getElementById('descripcion');
+                
+                if (nombre) nombre.value = producto.nombre || '';
+                if (categoria) categoria.value = producto.categoria || '';
+                if (precio) precio.value = producto.precio || '';
+                if (precioAnterior) precioAnterior.value = producto.precioAnterior || '';
+                if (stock) stock.value = producto.stock || '';
+                if (rating) rating.value = producto.rating || 4.5;
+                if (bateria) bateria.value = producto.bateria || '';
+                if (colores) colores.value = producto.colores ? producto.colores.join(', ') : '';
+                if (memorias) memorias.value = producto.memorias ? producto.memorias.join(', ') : '';
+                if (descripcion) descripcion.value = producto.descripcion || '';
+                
+                // Llenar checkboxes
+                const esNuevo = document.getElementById('esNuevo');
+                const enOferta = document.getElementById('enOferta');
+                const esAmericano = document.getElementById('esAmericano');
+                
+                if (esNuevo) esNuevo.checked = producto.esNuevo || false;
+                if (enOferta) enOferta.checked = producto.enOferta || false;
+                if (esAmericano) esAmericano.checked = producto.esAmericano || false;
+                
+                // Mostrar la imagen actual
+                if (producto.imagen) {
+                    const imagenBase64 = document.getElementById('imagenBase64');
+                    const previewContainer = document.getElementById('previewContainer');
+                    
+                    if (imagenBase64) imagenBase64.value = producto.imagen;
+                    if (previewContainer) {
+                        previewContainer.innerHTML = `
+                            <img src="${producto.imagen}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                        `;
+                    }
+                }
+                
+                // Cambiar el texto del botón
+                const btnSubmit = document.querySelector('#formAgregarProducto .btn-submit');
+                if (btnSubmit) {
+                    btnSubmit.innerHTML = '<i class="fas fa-save"></i> GUARDAR CAMBIOS';
+                    btnSubmit.style.background = '#ff9800';
+                    btnSubmit.style.borderColor = '#ff9800';
+                }
+                
+                // Mostrar botón de cancelar
+                const btnCancelar = document.getElementById('btnCancelar');
+                if (btnCancelar) btnCancelar.style.display = 'block';
+                
+                // Scroll al formulario
+                const tabAgregar = document.getElementById('tab-agregar');
+                if (tabAgregar) {
+                    tabAgregar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100); // Esperar 100ms para que la pestaña se active
         }
         
         // Función para cancelar edición y limpiar formulario
