@@ -553,6 +553,7 @@
             const carrito = carritoStr ? JSON.parse(carritoStr) : [];
             
             if (carrito[index]) {
+                const productoModificado = carrito[index];
                 carrito[index].cantidad += cambio;
                 
                 // No permitir cantidad menor a 1
@@ -568,6 +569,9 @@
                 
                 localStorage.setItem('carritoCell', JSON.stringify(carrito));
                 cargarCarrito();
+                
+                // 🔄 Disparar evento de actualización
+                dispararEventoCarrito('cantidadCambiada', productoModificado);
             }
         }
 
@@ -577,6 +581,7 @@
                 const carritoStr = localStorage.getItem('carritoCell');
                 const carrito = carritoStr ? JSON.parse(carritoStr) : [];
                 
+                const productoEliminado = carrito[index];
                 carrito.splice(index, 1);
                 localStorage.setItem('carritoCell', JSON.stringify(carrito));
                 
@@ -586,6 +591,9 @@
                 if (window.mostrarNotificacion) {
                     mostrarNotificacion('Producto eliminado del carrito');
                 }
+                
+                // 🔄 Disparar evento de actualización
+                dispararEventoCarrito('productoEliminado', productoEliminado);
             }
         }
 
@@ -598,7 +606,23 @@
                 if (window.mostrarNotificacion) {
                     mostrarNotificacion('Carrito vaciado');
                 }
+                
+                // 🔄 Disparar evento de actualización
+                dispararEventoCarrito('carritoVaciado', {});
             }
+        }
+        
+        /**
+         * Disparar evento personalizado de carrito
+         */
+        function dispararEventoCarrito(tipo, datos) {
+            const carritoStr = localStorage.getItem('carritoCell');
+            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            
+            const evento = new CustomEvent('carritoActualizado', {
+                detail: { tipo, datos, carrito }
+            });
+            window.dispatchEvent(evento);
         }
 
         // Calcular totales

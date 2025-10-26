@@ -410,8 +410,31 @@ body {
     letter-spacing: 0.8px;
 }
 
+/* Múltiples badges */
+.product-badge + .product-badge {
+    top: 50px; /* Segundo badge más abajo */
+}
+
+.product-badge + .product-badge + .product-badge {
+    top: 85px; /* Tercer badge más abajo */
+}
+
 .product-badge.sale {
     background: var(--crl-danger);
+}
+
+.product-badge.americano {
+    background: linear-gradient(135deg, #003366 0%, #1e5a8e 100%);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(0, 51, 102, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 16px rgba(0, 51, 102, 0.6);
+    }
 }
 
 /* Contenedor de imagen */
@@ -509,6 +532,18 @@ body {
     color: var(--crl-gray);
     flex: 1;
     white-space: pre-line;
+}
+
+/* ========== CONDICIÓN DE BATERÍA ========== */
+.product-battery {
+    font-size: 13px;
+    color: var(--crl-black);
+    margin: 8px 0;
+    padding: 6px 10px;
+    background: #f0f9f4;
+    border-left: 3px solid #28a745;
+    border-radius: 4px;
+    display: inline-block;
 }
 
 /* ========== VARIANTES DE PRODUCTO ========== */

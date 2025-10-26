@@ -116,6 +116,15 @@
             });
         });
         
+        // 🔄 Listener para actualización automática del catálogo
+        window.addEventListener('carritoActualizado', function(e) {
+            console.log('🔄 Carrito actualizado, recargando catálogo...');
+            if (window.Productos) {
+                const productosAccesorios = Productos.obtenerProductosPorCategoria('Accesorios');
+                Productos.renderizarProductos(productosAccesorios, 'ContentProducts');
+            }
+        });
+        
         // Cargar productos de la categoría Accesorios
         document.addEventListener('DOMContentLoaded', function() {
             if (window.Productos) {

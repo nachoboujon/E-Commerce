@@ -722,8 +722,17 @@ function renderizarProductos(productos, contenedorId = 'ContentProducts') {
  * @returns {string} - HTML de la tarjeta
  */
 function crearTarjetaProducto(producto) {
-    const badge = producto.esNuevo ? '<div class="product-badge">Nuevo</div>' :
-                  producto.enOferta ? '<div class="product-badge sale">Oferta</div>' : '';
+    // Crear badges (pueden ser múltiples)
+    let badges = '';
+    if (producto.esNuevo) {
+        badges += '<div class="product-badge">Nuevo</div>';
+    }
+    if (producto.enOferta) {
+        badges += '<div class="product-badge sale">Oferta</div>';
+    }
+    if (producto.esAmericano) {
+        badges += '<div class="product-badge americano">🇺🇸 Americano</div>';
+    }
     
     const precioAnterior = producto.precioAnterior ? 
         `<span class="old-price">$${producto.precioAnterior.toLocaleString()}</span>` : '';
@@ -781,7 +790,7 @@ function crearTarjetaProducto(producto) {
     
     return `
         <div class="Product" data-id="${producto.id}">
-            ${badge}
+            ${badges}
             <div class="product-image-container">
                 <img src="${rutaImagen}" 
                      alt="${producto.nombre}"
@@ -795,6 +804,7 @@ function crearTarjetaProducto(producto) {
                     <span>(${producto.rating})</span>
                 </div>
                 <p class="ProductDescription" style="white-space: pre-line;">${producto.descripcion}</p>
+                ${producto.bateria ? `<p class="product-battery"><i class="fas fa-battery-full" style="color: #28a745;"></i> Batería: <strong>${producto.bateria}</strong></p>` : ''}
                 
                 ${selectorColor}
                 ${selectorMemoria}

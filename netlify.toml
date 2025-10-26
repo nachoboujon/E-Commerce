@@ -1,0 +1,71 @@
+# Configuración de Netlify para PhoneSpot E-Commerce
+
+[build]
+  # No hay proceso de build para frontend estático
+  command = "echo 'No build needed for static files'"
+  publish = "."
+  
+[build.environment]
+  NODE_VERSION = "18"
+
+# Headers para caché y seguridad
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Cache control
+    Cache-Control = "public, max-age=0, must-revalidate"
+    
+    # Seguridad
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache para assets estáticos (CSS, JS, imágenes)
+[[headers]]
+  for = "/style*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/JavaScript/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/IMG/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Redirects para navegación
+[[redirects]]
+  from = "/admin"
+  to = "/HTML/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/carrito"
+  to = "/HTML/Carrito.html"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/HTML/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/registro"
+  to = "/HTML/registro.html"
+  status = 200
+
+# Redirect 404 a la página principal
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
+

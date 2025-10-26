@@ -380,9 +380,43 @@
                     </div>
 
                     <div class="form-row">
+                        <div class="form-group">
+                            <label for="bateria">🔋 Condición de batería (opcional)</label>
+                            <input type="text" id="bateria" name="bateria" placeholder="Ej: 95%, 100%, Excelente">
+                            <p style="font-size: 12px; color: var(--crl-gray); margin-top: 5px;">
+                                <i class="fas fa-battery-full"></i> Indica el estado de la batería (porcentaje o descripción)
+                            </p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <!-- Espacio vacío para mantener el grid -->
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="colores">Colores disponibles</label>
+                            <input type="text" id="colores" name="colores" placeholder="Negro, Blanco, Azul, Rojo" 
+                                   title="Separa los colores con comas">
+                            <p style="font-size: 12px; color: var(--crl-gray); margin-top: 5px;">
+                                <i class="fas fa-palette"></i> Separa los colores con comas (ej: Negro, Blanco, Azul)
+                            </p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="memorias">Memorias GB (Opcional)</label>
+                            <input type="text" id="memorias" name="memorias" placeholder="128GB, 256GB, 512GB" 
+                                   title="Separa las memorias con comas">
+                            <p style="font-size: 12px; color: var(--crl-gray); margin-top: 5px;">
+                                <i class="fas fa-microchip"></i> Separa las memorias con comas (ej: 128GB, 256GB)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="form-group form-group-full">
-                            <label for="descripcion">Descripción *</label>
-                            <textarea id="descripcion" name="descripcion" required placeholder="Descripción detallada del producto..."></textarea>
+                            <label for="descripcion">Descripción (opcional)</label>
+                            <textarea id="descripcion" name="descripcion" placeholder="Descripción detallada del producto..."></textarea>
                         </div>
                     </div>
 
@@ -418,6 +452,11 @@
                             <label>
                                 <input type="checkbox" id="enOferta" name="enOferta">
                                 <span>Marcar como "En Oferta"</span>
+                            </label>
+                            
+                            <label>
+                                <input type="checkbox" id="esAmericano" name="esAmericano">
+                                <span>🇺🇸 Marcar como "Americano"</span>
                             </label>
                         </div>
                     </div>
@@ -643,6 +682,18 @@
                 return;
             }
             
+            // Procesar colores y memorias (convertir de string separado por comas a array)
+            const coloresStr = formData.get('colores') || '';
+            const memoriasStr = formData.get('memorias') || '';
+            
+            const coloresArray = coloresStr.trim() 
+                ? coloresStr.split(',').map(c => c.trim()).filter(c => c) 
+                : [];
+            
+            const memoriasArray = memoriasStr.trim() 
+                ? memoriasStr.split(',').map(m => m.trim()).filter(m => m) 
+                : [];
+            
             const producto = {
                 nombre: formData.get('nombre'),
                 categoria: formData.get('categoria'),
@@ -651,9 +702,13 @@
                 stock: parseInt(formData.get('stock')),
                 rating: parseFloat(formData.get('rating')),
                 descripcion: formData.get('descripcion'),
+                bateria: formData.get('bateria') || null, // 🔋 Condición de batería (opcional)
                 imagen: imagenBase64, // Guardar imagen en base64
+                colores: coloresArray, // Array de colores
+                memorias: memoriasArray, // Array de memorias
                 esNuevo: formData.get('esNuevo') === 'on',
-                enOferta: formData.get('enOferta') === 'on'
+                enOferta: formData.get('enOferta') === 'on',
+                esAmericano: formData.get('esAmericano') === 'on' // 🇺🇸 Americano
             };
             
             if (Productos.agregarProducto(producto)) {

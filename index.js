@@ -17,7 +17,56 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Actualizar badge del carrito
     actualizarBadgeCarrito();
+    
+    // 🔄 Escuchar cambios en el carrito para actualizar catálogo
+    inicializarListenerCarrito();
 });
+
+/**
+ * Inicializar listener de cambios en el carrito
+ */
+function inicializarListenerCarrito() {
+    window.addEventListener('carritoActualizado', function(e) {
+        console.log('🔄 Carrito actualizado:', e.detail.tipo);
+        
+        // Actualizar catálogo si estamos en una página con productos
+        if (window.Productos && typeof window.Productos.renderizarProductos === 'function') {
+            const contenedor = document.querySelector('.ContentProducts') || document.getElementById('ContentProducts');
+            
+            if (contenedor) {
+                // Re-renderizar productos actuales
+                const currentPath = window.location.pathname;
+                
+                if (currentPath.includes('celulares.html')) {
+                    const productos = window.Productos.obtenerProductosPorCategoria('Celulares');
+                    window.Productos.renderizarProductos(productos, 'ContentProducts');
+                } else if (currentPath.includes('tablets.html')) {
+                    const productos = window.Productos.obtenerProductosPorCategoria('Tablets');
+                    window.Productos.renderizarProductos(productos, 'ContentProducts');
+                } else if (currentPath.includes('notebooks.html')) {
+                    const productos = window.Productos.obtenerProductosPorCategoria('Notebooks');
+                    window.Productos.renderizarProductos(productos, 'ContentProducts');
+                } else if (currentPath.includes('accesorios.html')) {
+                    const productos = window.Productos.obtenerProductosPorCategoria('Accesorios');
+                    window.Productos.renderizarProductos(productos, 'ContentProducts');
+                } else if (currentPath.includes('ofertas.html')) {
+                    const todosLosProductos = window.Productos.obtenerProductos();
+                    const productosEnOferta = todosLosProductos.filter(p => p.enOferta);
+                    window.Productos.renderizarProductos(productosEnOferta, 'ContentProducts');
+                } else if (currentPath.includes('index.html') || currentPath.endsWith('/')) {
+                    // Página principal - renderizar todos los productos
+                    const productos = window.Productos.obtenerProductos();
+                    window.Productos.renderizarProductos(productos);
+                }
+                
+                console.log('✅ Catálogo actualizado');
+            }
+        }
+        
+        // Actualizar badge del carrito
+        actualizarBadgeCarrito();
+    });
+}
 
 
 // ============================================================
@@ -49,6 +98,9 @@ function agregarAlCarrito(producto) {
     
     // Mostrar notificación
     mostrarNotificacion('Producto agregado al carrito ✓');
+    
+    // 🔄 Disparar evento de actualización de carrito
+    dispararEventoCarrito('productoAgregado', producto);
 }
 
 /**
@@ -83,6 +135,18 @@ function cargarCarritoDesdeStorage() {
     if (carritoGuardado) {
         carrito = JSON.parse(carritoGuardado);
     }
+}
+
+/**
+ * Disparar evento personalizado de carrito
+ * @param {String} tipo - Tipo de evento ('productoAgregado', 'productoEliminado', 'carritoVaciado')
+ * @param {Object} datos - Datos del evento
+ */
+function dispararEventoCarrito(tipo, datos) {
+    const evento = new CustomEvent('carritoActualizado', {
+        detail: { tipo, datos, carrito }
+    });
+    window.dispatchEvent(evento);
 }
 
 
