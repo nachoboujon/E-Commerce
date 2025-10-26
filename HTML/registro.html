@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - PhoneSpot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            padding: 20px;
+        }
+
+        .register-container {
+            background: #ffffff;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-section img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+
+        .logo-section h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 10px;
+        }
+
+        .logo-section p {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 16px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 18px 14px 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: #f5f5f5;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #000;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+        }
+
+        .password-strength-bar.weak {
+            width: 33%;
+            background: #f44336;
+        }
+
+        .password-strength-bar.medium {
+            width: 66%;
+            background: #ff9800;
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background: #4caf50;
+        }
+
+        .password-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: start;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+        }
+
+        .checkbox-group label {
+            font-size: 14px;
+            color: #333;
+            flex: 1;
+            margin: 0;
+        }
+
+        .checkbox-group a {
+            color: #000;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 16px;
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-register:hover {
+            background: #fff;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-register:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider span {
+            background: #fff;
+            padding: 0 15px;
+            position: relative;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .login-link a {
+            color: #000;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #f44336;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        .input-wrapper input[type="password"],
+        .input-wrapper input[type="text"] {
+            padding-right: 50px !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo-section">
+            <img src="../IMG/Phonestpot.jpg" alt="PhoneSpot">
+            <h1>Crear Cuenta</h1>
+            <p>Únete a PhoneSpot hoy</p>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <i class="fas fa-check-circle"></i> <span id="successText"></span>
+        </div>
+
+        <form id="registerForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nombre">Nombre *</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="nombre" name="nombre" placeholder="Juan" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="apellido">Apellido *</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="apellido" name="apellido" placeholder="Pérez" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" name="email" placeholder="ejemplo@email.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="telefono">Teléfono *</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-phone"></i>
+                    <input type="tel" id="telefono" name="telefono" placeholder="3447 416011" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="direccion">Dirección</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <input type="text" id="direccion" name="direccion" placeholder="Calle 123, Ciudad">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Nombre de usuario *</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-at"></i>
+                    <input type="text" id="username" name="username" placeholder="usuario123" required minlength="4">
+                </div>
+                <p class="password-hint">Mínimo 4 caracteres</p>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña *</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required minlength="6">
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword('password')"></i>
+                </div>
+                <div class="password-strength">
+                    <div class="password-strength-bar" id="passwordStrength"></div>
+                </div>
+                <p class="password-hint">Mínimo 6 caracteres, incluye mayúsculas y números</p>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirmar Contraseña *</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required>
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword('confirmPassword')"></i>
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="terminos" required>
+                <label for="terminos">
+                    Acepto los <a href="#" onclick="mostrarTerminos(); return false;">Términos y Condiciones</a> y la <a href="#" onclick="mostrarPrivacidad(); return false;">Política de Privacidad</a>
+                </label>
+            </div>
+
+            <button type="submit" class="btn-register">
+                <i class="fas fa-user-plus"></i> Crear Cuenta
+            </button>
+        </form>
+
+        <div class="divider">
+            <span>¿Ya tienes cuenta?</span>
+        </div>
+
+        <div class="login-link">
+            <a href="login.html">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </a>
+        </div>
+    </div>
+
+    <script src="../JavaScript/auth.js"></script>
+    <script src="../JavaScript/email-service.js"></script>
+    <script>
+        // Toggle mostrar/ocultar contraseña
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = field.nextElementSibling;
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Verificar fortaleza de contraseña
+        document.getElementById('password').addEventListener('input', function(e) {
+            const password = e.target.value;
+            const strengthBar = document.getElementById('passwordStrength');
+            
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            
+            strengthBar.className = 'password-strength-bar';
+            if (strength <= 2) {
+                strengthBar.classList.add('weak');
+            } else if (strength <= 4) {
+                strengthBar.classList.add('medium');
+            } else {
+                strengthBar.classList.add('strong');
+            }
+        });
+
+        // Manejo del formulario de registro
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const successMessage = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+            
+            // Ocultar mensajes previos
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+            
+            // Validar contraseñas coincidan
+            if (formData.get('password') !== formData.get('confirmPassword')) {
+                errorText.textContent = 'Las contraseñas no coinciden';
+                errorMessage.classList.add('show');
+                return;
+            }
+            
+            // Validar longitud de contraseña
+            if (formData.get('password').length < 6) {
+                errorText.textContent = 'La contraseña debe tener al menos 6 caracteres';
+                errorMessage.classList.add('show');
+                return;
+            }
+            
+            // Crear objeto de usuario
+            const nuevoUsuario = {
+                username: formData.get('username'),
+                password: formData.get('password'),
+                rol: 'cliente',
+                nombre: `${formData.get('nombre')} ${formData.get('apellido')}`,
+                email: formData.get('email'),
+                telefono: formData.get('telefono'),
+                direccion: formData.get('direccion') || '',
+                fechaRegistro: new Date().toISOString(),
+                verificado: false
+            };
+            
+            // Intentar registrar
+            const resultado = Auth.registrarNuevoUsuario(nuevoUsuario);
+            
+            if (resultado.success) {
+                // Generar código de verificación
+                const codigoVerificacion = Auth.generarCodigoVerificacion(nuevoUsuario.email);
+                
+                // Enviar email de bienvenida y verificación
+                if (window.EmailService) {
+                    // Enviar email de bienvenida
+                    EmailService.enviarEmailBienvenida({
+                        email: nuevoUsuario.email,
+                        nombre: nuevoUsuario.nombre
+                    }).then(resultado => {
+                        console.log('✅ Email de bienvenida enviado');
+                    }).catch(err => {
+                        console.warn('⚠️ Error al enviar email de bienvenida:', err);
+                    });
+                    
+                    // Enviar email con código de verificación
+                    EmailService.enviarEmailVerificacion(nuevoUsuario.email, codigoVerificacion)
+                        .then(resultado => {
+                            console.log('✅ Email de verificación enviado');
+                        }).catch(err => {
+                            console.warn('⚠️ Error al enviar email de verificación:', err);
+                        });
+                }
+                
+                // Mostrar mensaje según si se envió el email o no
+                if (window.EmailService && typeof emailjs !== 'undefined') {
+                    // Email enviado realmente
+                    successText.innerHTML = `¡Cuenta creada exitosamente! 🎉<br><br>📧 Hemos enviado un código de verificación de 6 dígitos a:<br><strong>${nuevoUsuario.email}</strong><br><br><small>Revisa tu bandeja de entrada (y la carpeta de spam).<br>Serás redirigido a la página de verificación...</small>`;
+                } else {
+                    // Modo demo - mostrar código
+                    successText.innerHTML = `¡Cuenta creada! Te hemos enviado un código de verificación al email:<br><strong>${nuevoUsuario.email}</strong><br><br>📋 <strong>Código (modo demo):</strong><br><strong style="font-size: 24px; color: #000; font-family: monospace;">${codigoVerificacion}</strong><br><small>Copia este código. Serás redirigido a la página de verificación...</small>`;
+                }
+                successMessage.classList.add('show');
+                
+                // Redirigir a página de verificación
+                setTimeout(() => {
+                    window.location.href = `verificar-email.html?email=${encodeURIComponent(nuevoUsuario.email)}`;
+                }, 4000);
+            } else {
+                errorText.textContent = resultado.message;
+                errorMessage.classList.add('show');
+            }
+        });
+
+        // Verificar si ya hay sesión activa
+        if (Auth.estaAutenticado()) {
+            window.location.href = '../index.html';
+        }
+
+        // Mostrar términos y condiciones
+        function mostrarTerminos() {
+            alert('TÉRMINOS Y CONDICIONES - PhoneSpot\n\n' +
+                  '1. Aceptación de términos\n' +
+                  'Al crear una cuenta, aceptas estos términos.\n\n' +
+                  '2. Uso de la cuenta\n' +
+                  'Eres responsable de mantener tu contraseña segura.\n\n' +
+                  '3. Compras\n' +
+                  'Todos los precios están en pesos argentinos.\n\n' +
+                  '4. Devoluciones\n' +
+                  'Puedes devolver productos dentro de 30 días.\n\n' +
+                  '5. Privacidad\n' +
+                  'Tus datos están protegidos según nuestra política.');
+        }
+
+        // Mostrar política de privacidad
+        function mostrarPrivacidad() {
+            alert('POLÍTICA DE PRIVACIDAD - PhoneSpot\n\n' +
+                  '1. Recopilación de datos\n' +
+                  'Recopilamos nombre, email, teléfono y dirección.\n\n' +
+                  '2. Uso de datos\n' +
+                  'Usamos tus datos solo para procesar pedidos.\n\n' +
+                  '3. Protección\n' +
+                  'Tus datos están almacenados de forma segura.\n\n' +
+                  '4. No compartimos datos\n' +
+                  'No vendemos ni compartimos tu información.\n\n' +
+                  '5. Tus derechos\n' +
+                  'Puedes solicitar eliminación de tus datos.');
+        }
+    </script>
+</body>
+</html>
+

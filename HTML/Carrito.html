@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - PhoneSpot</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../Style/styleCarrito.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos específicos del carrito */
+        .carrito-vacio {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--crl-lighter-gray);
+        }
+
+        .carrito-vacio i {
+            font-size: 80px;
+            color: var(--crl-light-gray);
+            margin-bottom: 20px;
+        }
+
+        .carrito-vacio h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--crl-black);
+        }
+
+        .carrito-vacio p {
+            color: var(--crl-gray);
+            margin-bottom: 30px;
+        }
+
+        .btn-volver {
+            padding: 14px 30px;
+            background: var(--crl-black);
+            color: white;
+            border: 2px solid var(--crl-black);
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-volver:hover {
+            background: white;
+            color: var(--crl-black);
+        }
+
+        .carrito-contenido {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        .carrito-items {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--crl-lighter-gray);
+            padding: 30px;
+        }
+
+        .carrito-item {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 20px;
+            padding: 20px;
+            border-bottom: 1px solid var(--crl-lighter-gray);
+            align-items: center;
+        }
+
+        .carrito-item:last-child {
+            border-bottom: none;
+        }
+
+        .carrito-item-imagen {
+            width: 120px;
+            height: 120px;
+            background: var(--crl-off-white);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carrito-item-imagen img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 10px;
+        }
+
+        .carrito-item-info h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--crl-black);
+        }
+
+        .carrito-item-info p {
+            color: var(--crl-gray);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .cantidad-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .cantidad-control button {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--crl-lighter-gray);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .cantidad-control button:hover {
+            background: var(--crl-black);
+            color: white;
+            border-color: var(--crl-black);
+        }
+
+        .cantidad-control span {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .carrito-item-acciones {
+            text-align: right;
+        }
+
+        .carrito-item-precio {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--crl-black);
+            margin-bottom: 15px;
+        }
+
+        .btn-eliminar {
+            background: transparent;
+            border: none;
+            color: var(--crl-danger);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            padding: 8px 12px;
+        }
+
+        .btn-eliminar:hover {
+            background: var(--crl-danger);
+            color: white;
+            border-radius: 6px;
+        }
+
+        .carrito-resumen {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--crl-lighter-gray);
+            padding: 30px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .carrito-resumen h3 {
+            font-size: 20px;
+            margin-bottom: 25px;
+            color: var(--crl-black);
+        }
+
+        .resumen-linea {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--crl-lighter-gray);
+        }
+
+        .resumen-linea:last-of-type {
+            border-bottom: 2px solid var(--crl-black);
+            margin-bottom: 15px;
+            padding: 20px 0;
+        }
+
+        .resumen-linea.total {
+            font-size: 24px;
+            font-weight: 700;
+            border: none;
+            padding-top: 20px;
+        }
+
+        .resumen-linea span:first-child {
+            color: var(--crl-gray);
+            font-size: 15px;
+        }
+
+        .resumen-linea span:last-child {
+            font-weight: 600;
+            color: var(--crl-black);
+        }
+
+        .resumen-linea.total span {
+            color: var(--crl-black);
+        }
+
+        .btn-checkout {
+            width: 100%;
+            padding: 16px;
+            background: var(--crl-black);
+            color: white;
+            border: 2px solid var(--crl-black);
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .btn-checkout:hover {
+            background: white;
+            color: var(--crl-black);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .btn-vaciar {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            color: var(--crl-danger);
+            border: 2px solid var(--crl-danger);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-vaciar:hover {
+            background: var(--crl-danger);
+            color: white;
+        }
+
+        .metodos-pago {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid var(--crl-lighter-gray);
+        }
+
+        .metodos-pago p {
+            font-size: 13px;
+            color: var(--crl-gray);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .metodos-pago-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .metodos-pago-icons i {
+            font-size: 40px;
+        }
+        
+        .metodos-pago-icons > div {
+            padding: 15px;
+            background: var(--crl-off-white);
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+        
+        .metodos-pago-icons > div:hover {
+            transform: translateY(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .carrito-contenido {
+                grid-template-columns: 1fr;
+            }
+
+            .carrito-resumen {
+                position: static;
+            }
+
+            .carrito-item {
+                grid-template-columns: 80px 1fr;
+                gap: 15px;
+            }
+
+            .carrito-item-acciones {
+                grid-column: 1 / -1;
+                text-align: left;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Barra lateral -->
+        <aside>
+            <header>
+                <div class="logo-container">
+                    <img src="../IMG/Phonestpot.jpg" alt="PhoneSpot Logo" class="logo-image">
+                    <h1>PhoneSpot</h1>
+                </div>
+            </header>
+            
+            <nav>
+                <ul>
+                    <li><button class="botonCategory" onclick="window.location.href='../index.html'"><i class="fas fa-home"></i> Inicio</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='celulares.html'"><i class="fas fa-mobile-alt"></i> Celulares</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='tablets.html'"><i class="fas fa-tablet-alt"></i> Tablets</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='notebooks.html'"><i class="fas fa-laptop"></i> Notebooks</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='accesorios.html'"><i class="fas fa-headphones"></i> Accesorios</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='ofertas.html'"><i class="fas fa-tag"></i> Ofertas</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='contacto.html'"><i class="fas fa-envelope"></i> Contacto</button></li>
+                    <li class="admin-only" style="display: none;">
+                        <button class="botonCategory" onclick="window.location.href='admin.html'" style="background: rgba(255,255,255,0.15);">
+                            <i class="fas fa-tools"></i> Panel Admin
+                        </button>
+                    </li>
+                    <li><a href="Carrito.html" class="botonCarrito active"><i class="fas fa-shopping-cart"></i> Carrito <span class="cart-badge">0</span></a></li>
+                    <li id="authButton"></li>
+                </ul>
+            </nav>
+            
+            <footer>
+                <div class="footer-content">
+                    <p class="footerText"><i class="fas fa-copyright"></i> PhoneSpot 2025</p>
+                    <p class="footerText"><i class="fas fa-phone"></i> 3447 416011</p>
+                    <p class="footerText"><i class="fas fa-envelope"></i> info@phonespot.com</p>
+                    <p class="footerText"><i class="fas fa-map-marker-alt"></i> Moreno 840, CP 3283</p>
+                    <p class="footerText"><i class="fas fa-location-arrow"></i> San José, Colón, Entre Ríos</p>
+                </div>
+            </footer>
+        </aside>
+        
+        <!-- Contenido principal -->
+        <main>
+            <div class="main-header">
+                <h2><i class="fas fa-shopping-cart"></i> Carrito de Compras</h2>
+            </div>
+
+            <!-- Carrito vacío -->
+            <div id="carritoVacio" class="carrito-vacio" style="display: none;">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Tu carrito está vacío</h3>
+                <p>Agrega productos para comenzar tu compra</p>
+                <a href="../index.html" class="btn-volver">
+                    <i class="fas fa-arrow-left"></i> Volver a la tienda
+                </a>
+            </div>
+
+            <!-- Carrito con productos -->
+            <div id="carritoContenido" class="carrito-contenido" style="display: none;">
+                <!-- Lista de productos -->
+                <div class="carrito-items">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <h3 style="font-size: 20px; margin: 0;">Productos en tu carrito</h3>
+                        <button class="btn-vaciar" onclick="vaciarCarrito()">
+                            <i class="fas fa-trash"></i> Vaciar carrito
+                        </button>
+                    </div>
+                    <div id="listaProductos">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Resumen del pedido -->
+                <div class="carrito-resumen">
+                    <h3>Resumen del pedido</h3>
+                    
+                    <!-- ⚠️ ADVERTENCIA MAYORISTA -->
+                    <div id="advertencia-mayorista" style="display: none; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 13px; color: #856404; text-align: center;">
+                    </div>
+                    
+                    <div class="resumen-linea">
+                        <span>Subtotal</span>
+                        <span id="subtotal">$0</span>
+                    </div>
+                    
+                    <div class="resumen-linea">
+                        <span>Envío</span>
+                        <span id="envio">$5.000</span>
+                    </div>
+                    
+                    <div class="resumen-linea">
+                        <span>Descuento</span>
+                        <span id="descuento" style="color: var(--crl-success);">-$0</span>
+                    </div>
+                    
+                    <div class="resumen-linea total">
+                        <span>Total</span>
+                        <span id="total">$0</span>
+                    </div>
+
+                    <button class="btn-checkout" onclick="finalizarCompra()">
+                        <i class="fas fa-credit-card"></i> Finalizar Compra
+                    </button>
+
+                    <a href="../index.html" class="btn-volver" style="display: block; text-align: center;">
+                        <i class="fas fa-arrow-left"></i> Seguir comprando
+                    </a>
+
+                    <div class="metodos-pago">
+                        <p><i class="fas fa-shield-alt"></i> Métodos de Pago Aceptados</p>
+                        <div class="metodos-pago-icons">
+                            <div style="text-align: center; flex: 1;">
+                                <i class="fas fa-money-bill-wave" style="color: #2ecc71;"></i>
+                                <p style="font-size: 11px; margin-top: 5px;">Efectivo - Dólar Cara Grande Azul</p>
+                            </div>
+                            <div style="text-align: center; flex: 1;">
+                                <i class="fab fa-bitcoin" style="color: #f39c12;"></i>
+                                <p style="font-size: 11px; margin-top: 5px;">Transferencia USDT</p>
+                            </div>
+                        </div>
+                        <p style="font-size: 11px; margin-top: 15px; font-style: italic;">
+                            <i class="fas fa-info-circle"></i> Coordinar método de pago con el dueño al momento de la compra
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../JavaScript/api-service.js"></script>
+    <script src="../JavaScript/auth.js"></script>
+    <script src="../JavaScript/productos.js"></script>
+    <script src="../JavaScript/email-service.js"></script>
+    <script src="../index.js"></script>
+    <script>
+        // Actualizar UI de autenticación
+        document.addEventListener('DOMContentLoaded', function() {
+            const authButton = document.getElementById('authButton');
+            const sesion = Auth.obtenerSesion();
+            
+            if (sesion) {
+                authButton.innerHTML = `
+                    <button class="botonCategory" onclick="Auth.logout()" style="background: rgba(255,255,255,0.15);">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </button>
+                `;
+                
+                if (sesion.rol === 'administrador') {
+                    document.querySelectorAll('.admin-only').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                }
+            } else {
+                authButton.innerHTML = `
+                    <button class="botonCategory" onclick="window.location.href='login.html'" style="background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                    </button>
+                `;
+            }
+
+            // Cargar y mostrar carrito
+            cargarCarrito();
+        });
+
+        // Cargar productos del carrito
+        function cargarCarrito() {
+            const carritoStr = localStorage.getItem('carritoCell');
+            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            
+            actualizarBadgeCarrito();
+
+            if (carrito.length === 0) {
+                document.getElementById('carritoVacio').style.display = 'block';
+                document.getElementById('carritoContenido').style.display = 'none';
+            } else {
+                document.getElementById('carritoVacio').style.display = 'none';
+                document.getElementById('carritoContenido').style.display = 'grid';
+                renderizarCarrito(carrito);
+                calcularTotales(carrito);
+            }
+        }
+
+        // Renderizar productos del carrito
+        function renderizarCarrito(carrito) {
+            const listaProductos = document.getElementById('listaProductos');
+            
+            listaProductos.innerHTML = carrito.map((producto, index) => {
+                // Ajustar ruta de imagen si es necesario
+                let imagenSrc = producto.imagen;
+                if (imagenSrc && !imagenSrc.startsWith('http') && !imagenSrc.startsWith('data:') && !imagenSrc.startsWith('../')) {
+                    imagenSrc = '../' + imagenSrc;
+                }
+                
+                return `
+                <div class="carrito-item">
+                    <div class="carrito-item-imagen">
+                        <img src="${imagenSrc}" alt="${producto.nombre}" onerror="this.src='https://via.placeholder.com/120x120/000000/FFFFFF/?text=Producto'">
+                    </div>
+                    
+                    <div class="carrito-item-info">
+                        <h3>${producto.nombre}</h3>
+                        <p>Precio unitario: USD $${producto.precio.toLocaleString()}</p>
+                        
+                        <div class="cantidad-control">
+                            <button onclick="cambiarCantidad(${index}, -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span>${producto.cantidad}</span>
+                            <button onclick="cambiarCantidad(${index}, 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="carrito-item-acciones">
+                        <div class="carrito-item-precio">
+                            USD $${(producto.precio * producto.cantidad).toLocaleString()}
+                        </div>
+                        <button class="btn-eliminar" onclick="eliminarDelCarrito(${index})">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Cambiar cantidad de producto
+        function cambiarCantidad(index, cambio) {
+            const carritoStr = localStorage.getItem('carritoCell');
+            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            
+            if (carrito[index]) {
+                carrito[index].cantidad += cambio;
+                
+                // No permitir cantidad menor a 1
+                if (carrito[index].cantidad < 1) {
+                    carrito[index].cantidad = 1;
+                }
+                
+                // No permitir más de 10 unidades
+                if (carrito[index].cantidad > 10) {
+                    carrito[index].cantidad = 10;
+                    alert('Máximo 10 unidades por producto');
+                }
+                
+                localStorage.setItem('carritoCell', JSON.stringify(carrito));
+                cargarCarrito();
+            }
+        }
+
+        // Eliminar producto del carrito
+        function eliminarDelCarrito(index) {
+            if (confirm('¿Eliminar este producto del carrito?')) {
+                const carritoStr = localStorage.getItem('carritoCell');
+                const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+                
+                carrito.splice(index, 1);
+                localStorage.setItem('carritoCell', JSON.stringify(carrito));
+                
+                cargarCarrito();
+                
+                // Mostrar notificación
+                if (window.mostrarNotificacion) {
+                    mostrarNotificacion('Producto eliminado del carrito');
+                }
+            }
+        }
+
+        // Vaciar todo el carrito
+        function vaciarCarrito() {
+            if (confirm('¿Estás seguro de vaciar todo el carrito?')) {
+                localStorage.removeItem('carritoCell');
+                cargarCarrito();
+                
+                if (window.mostrarNotificacion) {
+                    mostrarNotificacion('Carrito vaciado');
+                }
+            }
+        }
+
+        // Calcular totales
+        function calcularTotales(carrito) {
+            const totalProductos = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            let subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            
+            // ✨ LÓGICA DE PRECIO MAYORISTA
+            // Si hay menos de 3 productos, agregar +10 USD por producto
+            let cargoMayorista = 0;
+            if (totalProductos < 3 && totalProductos > 0) {
+                cargoMayorista = totalProductos * 10; // +10 USD por cada producto
+                subtotal += cargoMayorista;
+            }
+            
+            const envio = 0; // ✅ ENVÍO GRATIS SIEMPRE
+            const descuento = 0;
+            const total = subtotal + envio - descuento;
+            
+            document.getElementById('subtotal').textContent = 'USD $' + subtotal.toLocaleString();
+            document.getElementById('envio').textContent = 'GRATIS';
+            document.getElementById('descuento').textContent = '-USD $' + descuento.toLocaleString();
+            document.getElementById('total').textContent = 'USD $' + total.toLocaleString();
+            
+            // ⚠️ Mostrar advertencia si hay cargo mayorista
+            const advertenciaMayorista = document.getElementById('advertencia-mayorista');
+            if (advertenciaMayorista) {
+                if (cargoMayorista > 0) {
+                    advertenciaMayorista.style.display = 'block';
+                    advertenciaMayorista.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Cargo por compra minorista:</strong> +$${cargoMayorista} USD 
+                        (${totalProductos} producto${totalProductos > 1 ? 's' : ''} × $10 USD)
+                        <br>
+                        <small>Agrega ${3 - totalProductos} producto${(3 - totalProductos) > 1 ? 's' : ''} más para obtener precio mayorista y ahorra $${cargoMayorista} USD</small>
+                    `;
+                } else {
+                    advertenciaMayorista.style.display = 'none';
+                }
+            }
+        }
+
+        // Actualizar badge del carrito
+        function actualizarBadgeCarrito() {
+            const carritoStr = localStorage.getItem('carritoCell');
+            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            const totalProductos = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            
+            const badge = document.querySelector('.cart-badge');
+            if (badge) {
+                badge.textContent = totalProductos;
+            }
+        }
+
+        // Finalizar compra
+        function finalizarCompra() {
+            const sesion = Auth ? Auth.obtenerSesion() : null;
+            
+            if (!sesion) {
+                if (confirm('Debes iniciar sesión para finalizar la compra. ¿Ir al login?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            }
+            
+            const carritoStr = localStorage.getItem('carritoCell');
+            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            
+            if (carrito.length === 0) {
+                alert('El carrito está vacío');
+                return;
+            }
+            
+            // Calcular totales con lógica de mayorista
+            const totalProductos = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            let subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            
+            // ✨ LÓGICA DE PRECIO MAYORISTA
+            let cargoMayorista = 0;
+            if (totalProductos < 3 && totalProductos > 0) {
+                cargoMayorista = totalProductos * 10; // +10 USD por cada producto
+                subtotal += cargoMayorista;
+            }
+            
+            // Validar stock antes de mostrar confirmación
+            const validacion = Productos.validarStockCarrito(carrito);
+            
+            if (!validacion.valido) {
+                alert('❌ No se puede procesar la compra:\n\n' + validacion.errores.join('\n\n') + '\n\nPor favor, ajusta las cantidades.');
+                
+                // Recargar carrito para mostrar stock actualizado
+                cargarCarrito();
+                return;
+            }
+            
+            const envio = 0; // ✅ ENVÍO GRATIS SIEMPRE
+            const total = subtotal + envio;
+            
+            let mensajeMayorista = '';
+            if (cargoMayorista > 0) {
+                mensajeMayorista = `\n⚠️ Cargo minorista: +$${cargoMayorista} USD (${totalProductos} producto${totalProductos > 1 ? 's' : ''} × $10)\n`;
+            } else if (totalProductos >= 3) {
+                mensajeMayorista = `\n✅ Precio mayorista aplicado (3+ productos)\n`;
+            }
+            
+            const confirmacion = confirm(
+                `Resumen de compra:\n\n` +
+                `Productos: ${carrito.length} (${totalProductos} unidades)\n` +
+                mensajeMayorista +
+                `Subtotal: USD $${subtotal.toLocaleString()}\n` +
+                `Envío: GRATIS 🎁\n` +
+                `Total: USD $${total.toLocaleString()}\n\n` +
+                `¿Confirmar compra?`
+            );
+            
+            if (confirmacion) {
+                // Mostrar indicador de carga
+                const btnCheckout = document.querySelector('.btn-checkout');
+                const textoOriginal = btnCheckout.innerHTML;
+                btnCheckout.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+                btnCheckout.disabled = true;
+                
+                // Verificar si el backend está disponible
+                if (window.BACKEND_DISPONIBLE && window.APIService) {
+                    console.log('🔄 Procesando compra con backend (MongoDB)...');
+                    
+                    // Preparar datos de la orden para el backend
+                    const ordenData = {
+                        productos: carrito.map(item => ({
+                            productoId: item.id,
+                            cantidad: item.cantidad
+                        })),
+                        metodoPago: 'pendiente', // El usuario coordinará después
+                        notas: `Compra desde PhoneSpot - ${new Date().toLocaleString()}`
+                    };
+                    
+                    // Crear orden en el backend
+                    APIService.crearOrden(ordenData)
+                        .then(orden => {
+                            console.log('✅ Orden creada en MongoDB:', orden);
+                            
+                            // Enviar emails
+                            if (window.EmailService) {
+                                EmailService.procesarEmailsCompra({
+                                    id: orden.numeroOrden,
+                                    fecha: orden.fechaOrden,
+                                    productos: orden.productos,
+                                    total: orden.total
+                                }, sesion);
+                            }
+                            
+                            // Compra exitosa
+                            alert(`✅ ¡Compra realizada con éxito!\n\n` +
+                                  `Orden: ${orden.numeroOrden}\n` +
+                                  `Gracias por tu compra, ${sesion.nombre}.\n\n` +
+                                  `📦 Recibirás un email de confirmación.\n` +
+                                  `💳 Total: USD $${total.toLocaleString()}\n` +
+                                  `📍 Nos contactaremos para coordinar la entrega.`);
+                            
+                            // Vaciar carrito
+                            localStorage.removeItem('carritoCell');
+                            
+                            // Sincronizar productos actualizados
+                            APIService.sincronizarProductos();
+                            
+                            // Redirigir al inicio
+                            window.location.href = '../index.html';
+                        })
+                        .catch(error => {
+                            console.error('❌ Error al crear orden en backend:', error);
+                            alert(`❌ Error al procesar la compra:\n\n${error.message}\n\nPor favor, verifica tu conexión e intenta nuevamente.`);
+                            
+                            // Restaurar botón
+                            btnCheckout.innerHTML = textoOriginal;
+                            btnCheckout.disabled = false;
+                        });
+                } else {
+                    console.log('⚠️ Backend no disponible, usando localStorage...');
+                    
+                    // Modo fallback: procesar con localStorage
+                    const compraExitosa = Productos.procesarCompra(carrito);
+                    
+                    if (compraExitosa) {
+                        // Obtener la última compra registrada
+                        const historial = Productos.obtenerHistorialCompras();
+                        const ultimaCompra = historial[historial.length - 1];
+                        
+                        // Enviar emails al administrador y cliente
+                        if (window.EmailService) {
+                            EmailService.procesarEmailsCompra(ultimaCompra, sesion)
+                                .catch(err => console.warn('⚠️ Error al enviar emails:', err));
+                        }
+                        
+                        // Compra exitosa
+                        alert(`✅ ¡Compra realizada con éxito!\n\nGracias por tu compra, ${sesion.nombre}.\n\n📦 Recibirás un email de confirmación.\n💳 Total: USD $${total.toLocaleString()}\n📍 Nos contactaremos para coordinar la entrega.`);
+                        
+                        // Vaciar carrito
+                        localStorage.removeItem('carritoCell');
+                        
+                        // Redirigir al inicio
+                        window.location.href = '../index.html';
+                    } else {
+                        alert('❌ Error al procesar la compra. Por favor, intenta nuevamente.');
+                        btnCheckout.innerHTML = textoOriginal;
+                        btnCheckout.disabled = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

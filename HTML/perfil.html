@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - PhoneSpot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Contenedor principal del perfil */
+        .profile-container {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Header del perfil dentro del main */
+        .profile-header {
+            background: linear-gradient(135deg, #000 0%, #333 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 50px;
+            color: #000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-role {
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .profile-role.admin {
+            color: #ffd700;
+        }
+
+        .profile-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-button:hover {
+            color: #000;
+        }
+
+        .tab-button.active {
+            color: #000;
+            border-bottom-color: #000;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .info-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #000;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #000;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary {
+            background: #000;
+            color: white;
+            padding: 14px 30px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            background: #fff;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #666;
+            padding: 14px 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            border-color: #000;
+            color: #000;
+            background: #f5f5f5;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #666;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .back-button:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Barra lateral -->
+        <aside>
+            <header>
+                <div class="logo-container">
+                    <img src="../IMG/Phonestpot.jpg" alt="PhoneSpot Logo" class="logo-image">
+                    <h1>PhoneSpot</h1>
+                </div>
+            </header>
+            
+            <nav>
+                <ul>
+                    <li><button class="botonCategory" onclick="window.location.href='../index.html'"><i class="fas fa-home"></i> Inicio</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='celulares.html'"><i class="fas fa-mobile-alt"></i> Celulares</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='tablets.html'"><i class="fas fa-tablet-alt"></i> Tablets</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='notebooks.html'"><i class="fas fa-laptop"></i> Notebooks</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='accesorios.html'"><i class="fas fa-headphones"></i> Accesorios</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='ofertas.html'"><i class="fas fa-tag"></i> Ofertas</button></li>
+                    <li><button class="botonCategory" onclick="window.location.href='contacto.html'"><i class="fas fa-envelope"></i> Contacto</button></li>
+                    <!-- Botón de administrador (solo visible para admins) -->
+                    <li class="admin-only" style="display: none;">
+                        <button class="botonCategory" onclick="window.location.href='admin.html'" style="background: rgba(255,255,255,0.15);">
+                            <i class="fas fa-tools"></i> Panel Admin
+                        </button>
+                    </li>
+                    <li><a href="Carrito.html" class="botonCarrito"><i class="fas fa-shopping-cart"></i> Carrito <span class="cart-badge">0</span></a></li>
+                    <!-- Botón de perfil (solo visible cuando hay sesión) -->
+                    <li id="profileButton">
+                        <button class="botonCategory active" onclick="window.location.href='perfil.html'">
+                            <i class="fas fa-user-circle"></i> <span class="user-info">Mi Perfil</span>
+                        </button>
+                    </li>
+                    <!-- Botón de login/logout -->
+                    <li id="authButton"></li>
+                </ul>
+            </nav>
+            
+            <footer>
+                <div class="footer-content">
+                    <p class="footerText"><i class="fas fa-copyright"></i> PhoneSpot 2025</p>
+                    <p class="footerText"><i class="fas fa-phone"></i> 3447 416011</p>
+                    <p class="footerText"><i class="fas fa-envelope"></i> info@phonespot.com</p>
+                    <p class="footerText"><i class="fas fa-map-marker-alt"></i> Moreno 840, CP 3283</p>
+                    <p class="footerText"><i class="fas fa-location-arrow"></i> San José, Entre Ríos</p>
+                </div>
+            </footer>
+        </aside>
+        
+        <main>
+            <div class="main-header">
+                <h2><i class="fas fa-user-circle"></i> Mi Perfil</h2>
+            </div>
+            
+            <div class="profile-container">
+                <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-name" id="profileName">Cargando...</div>
+            <div class="profile-role" id="profileRole">...</div>
+        </div>
+
+        <div class="profile-tabs">
+            <button class="tab-button active" onclick="cambiarTab('info')">
+                <i class="fas fa-info-circle"></i> Información
+            </button>
+            <button class="tab-button" onclick="cambiarTab('editar')">
+                <i class="fas fa-edit"></i> Editar Perfil
+            </button>
+            <button class="tab-button" onclick="cambiarTab('password')">
+                <i class="fas fa-lock"></i> Cambiar Contraseña
+            </button>
+        </div>
+
+        <!-- Tab: Información -->
+        <div class="tab-content active" id="tabInfo">
+            <div class="info-card">
+                <h3><i class="fas fa-user-circle"></i> Información Personal</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Nombre Completo</div>
+                        <div class="info-value" id="infoNombre">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Usuario</div>
+                        <div class="info-value" id="infoUsername">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value" id="infoEmail">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Teléfono</div>
+                        <div class="info-value" id="infoTelefono">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Dirección</div>
+                        <div class="info-value" id="infoDireccion">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Rol</div>
+                        <div class="info-value" id="infoRol">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Fecha de Registro</div>
+                        <div class="info-value" id="infoFechaRegistro">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Editar Perfil -->
+        <div class="tab-content" id="tabEditar">
+            <div class="info-card">
+                <h3><i class="fas fa-edit"></i> Editar Información</h3>
+                
+                <div class="message" id="messageEdit"></div>
+
+                <form id="formEditarPerfil">
+                    <div class="form-group">
+                        <label for="editNombre">Nombre Completo</label>
+                        <input type="text" id="editNombre" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editEmail">Email</label>
+                        <input type="email" id="editEmail" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editTelefono">Teléfono</label>
+                        <input type="tel" id="editTelefono" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editDireccion">Dirección</label>
+                        <input type="text" id="editDireccion">
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="cancelarEdicion()">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab: Cambiar Contraseña -->
+        <div class="tab-content" id="tabPassword">
+            <div class="info-card">
+                <h3><i class="fas fa-lock"></i> Cambiar Contraseña</h3>
+                
+                <div class="message" id="messagePassword"></div>
+
+                <form id="formCambiarPassword">
+                    <div class="form-group">
+                        <label for="currentPassword">Contraseña Actual</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="currentPassword" required>
+                            <i class="fas fa-eye toggle-password" onclick="togglePassword('currentPassword')"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">Nueva Contraseña</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="newPassword" required minlength="6">
+                            <i class="fas fa-eye toggle-password" onclick="togglePassword('newPassword')"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirmar Nueva Contraseña</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="confirmNewPassword" required>
+                            <i class="fas fa-eye toggle-password" onclick="togglePassword('confirmNewPassword')"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-check"></i> Cambiar Contraseña
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="limpiarFormPassword()">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </form>
+            </div>
+        </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../JavaScript/auth.js"></script>
+    <script src="../index.js"></script>
+    <script>
+        // Proteger página (requiere autenticación)
+        Auth.protegerPagina();
+        
+        // Actualizar botón de autenticación en el aside
+        document.addEventListener('DOMContentLoaded', function() {
+            const authButton = document.getElementById('authButton');
+            const sesion = Auth.obtenerSesion();
+            
+            if (sesion) {
+                authButton.innerHTML = `
+                    <button class="botonCategory" onclick="Auth.logout()" style="background: rgba(255,255,255,0.15);">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </button>
+                `;
+                
+                // Mostrar botón de admin si es administrador
+                if (sesion.rol === 'administrador') {
+                    document.querySelectorAll('.admin-only').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                }
+            }
+        });
+
+        // Cargar perfil
+        let perfilActual = null;
+
+        function cargarPerfil() {
+            perfilActual = Auth.obtenerPerfil();
+            
+            if (!perfilActual) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Actualizar header
+            document.getElementById('profileName').textContent = perfilActual.nombre;
+            const roleElement = document.getElementById('profileRole');
+            roleElement.textContent = perfilActual.rol === 'administrador' ? 'Administrador' : 'Cliente';
+            if (perfilActual.rol === 'administrador') {
+                roleElement.classList.add('admin');
+            }
+
+            // Actualizar información
+            document.getElementById('infoNombre').textContent = perfilActual.nombre;
+            document.getElementById('infoUsername').textContent = perfilActual.username;
+            document.getElementById('infoEmail').textContent = perfilActual.email;
+            document.getElementById('infoTelefono').textContent = perfilActual.telefono || '-';
+            document.getElementById('infoDireccion').textContent = perfilActual.direccion || '-';
+            document.getElementById('infoRol').textContent = perfilActual.rol === 'administrador' ? 'Administrador' : 'Cliente';
+            
+            if (perfilActual.fechaRegistro) {
+                const fecha = new Date(perfilActual.fechaRegistro);
+                document.getElementById('infoFechaRegistro').textContent = fecha.toLocaleDateString('es-AR');
+            }
+
+            // Prellenar formulario de edición
+            document.getElementById('editNombre').value = perfilActual.nombre;
+            document.getElementById('editEmail').value = perfilActual.email;
+            document.getElementById('editTelefono').value = perfilActual.telefono || '';
+            document.getElementById('editDireccion').value = perfilActual.direccion || '';
+        }
+
+        // Cambiar tabs
+        function cambiarTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            
+            if (tab === 'info') {
+                document.getElementById('tabInfo').classList.add('active');
+            } else if (tab === 'editar') {
+                document.getElementById('tabEditar').classList.add('active');
+            } else if (tab === 'password') {
+                document.getElementById('tabPassword').classList.add('active');
+            }
+        }
+
+        // Toggle password visibility
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = field.nextElementSibling;
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Editar perfil
+        document.getElementById('formEditarPerfil').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nuevosDatos = {
+                nombre: document.getElementById('editNombre').value,
+                email: document.getElementById('editEmail').value,
+                telefono: document.getElementById('editTelefono').value,
+                direccion: document.getElementById('editDireccion').value
+            };
+            
+            const resultado = Auth.actualizarPerfil(nuevosDatos);
+            
+            mostrarMensaje('messageEdit', resultado.success, resultado.message);
+            
+            if (resultado.success) {
+                cargarPerfil();
+                setTimeout(() => {
+                    cambiarTab('info');
+                }, 1500);
+            }
+        });
+
+        // Cancelar edición
+        function cancelarEdicion() {
+            cargarPerfil(); // Restablecer valores
+            cambiarTab('info');
+        }
+
+        // Cambiar contraseña
+        document.getElementById('formCambiarPassword').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+            
+            // Validar contraseña actual
+            const sesion = Auth.obtenerSesion();
+            const usuario = Auth.buscarUsuario(sesion.username);
+            
+            if (usuario.password !== currentPassword) {
+                mostrarMensaje('messagePassword', false, 'Contraseña actual incorrecta');
+                return;
+            }
+            
+            // Validar que coincidan
+            if (newPassword !== confirmPassword) {
+                mostrarMensaje('messagePassword', false, 'Las contraseñas no coinciden');
+                return;
+            }
+            
+            // Validar longitud
+            if (newPassword.length < 6) {
+                mostrarMensaje('messagePassword', false, 'La contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+            
+            // Cambiar contraseña
+            const resultado = Auth.cambiarPassword(sesion.username, newPassword);
+            
+            mostrarMensaje('messagePassword', resultado.success, resultado.message);
+            
+            if (resultado.success) {
+                limpiarFormPassword();
+            }
+        });
+
+        // Limpiar formulario de contraseña
+        function limpiarFormPassword() {
+            document.getElementById('formCambiarPassword').reset();
+        }
+
+        // Mostrar mensaje
+        function mostrarMensaje(elementId, success, message) {
+            const messageEl = document.getElementById(elementId);
+            messageEl.className = 'message show ' + (success ? 'success' : 'error');
+            messageEl.innerHTML = `<i class="fas fa-${success ? 'check' : 'exclamation'}-circle"></i> ${message}`;
+            
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 5000);
+        }
+
+        // Cargar perfil al iniciar
+        cargarPerfil();
+    </script>
+</body>
+</html>
+
