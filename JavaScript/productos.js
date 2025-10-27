@@ -958,13 +958,20 @@ function crearTarjetaProducto(producto) {
     
     if (producto.variantes && producto.variantes.length > 0) {
         // Extraer opciones únicas de las variantes
-        coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c))];
-        memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m))];
-        bateriasDisponibles = [...new Set(producto.variantes.map(v => v.bateria).filter(b => b))];
+        coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c && c.trim() !== ''))];
+        memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
+        bateriasDisponibles = [...new Set(producto.variantes.map(v => v.bateria).filter(b => b && b.trim() !== ''))];
+        
+        // Debug: Ver qué colores se extrajeron
+        console.log(`Producto ${producto.id} - Variantes:`, producto.variantes);
+        console.log(`Colores disponibles extraídos:`, coloresDisponibles);
+        console.log(`Memorias disponibles extraídas:`, memoriasDisponibles);
+        console.log(`Baterías disponibles extraídas:`, bateriasDisponibles);
     } else {
         // Usar arrays base si no hay variantes
         coloresDisponibles = producto.colores || [];
         memoriasDisponibles = producto.memorias || [];
+        console.log(`Producto ${producto.id} - Sin variantes, usando arrays base`);
     }
     
     const selectorColor = coloresDisponibles.length > 0 ? `
