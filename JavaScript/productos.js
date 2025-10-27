@@ -747,6 +747,9 @@ function inicializarCambioPrecio() {
     });
     
     productosConVariantes.forEach(productoId => {
+        // ✅ Primero filtrar selectores según el color inicial
+        actualizarSelectoresDinamicos(productoId, 'color');
+        // Luego actualizar el precio
         actualizarPrecioProducto(productoId);
     });
 }
@@ -784,20 +787,54 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado) {
         variantesFiltradas = variantesFiltradas.filter(v => !v.memoria || v.memoria === memoriaSeleccionada);
     }
     
-    // Actualizar opciones de memoria según color seleccionado
-    if (memoriaSelector && selectorCambiado === 'color') {
-        // Usar memorias del producto base, no filtrar por variantes
-        const memoriasBase = producto.memorias || [];
+    // ✅ FILTRAR MEMORIAS SEGÚN EL COLOR SELECCIONADO
+    if (memoriaSelector && selectorCambiado === 'color' && colorSeleccionado) {
+        // Obtener solo las memorias que tienen variantes con este color
+        const variantesDelColor = producto.variantes.filter(v => v.color === colorSeleccionado);
+        console.log(`🔍 Variantes del color "${colorSeleccionado}":`, variantesDelColor);
+        
+        const memoriasDisponiblesParaColor = [...new Set(
+            variantesDelColor
+                .map(v => v.memoria)
+                .filter(m => m && m.trim() !== '')
+        )];
+        
+        console.log(`💾 Memorias disponibles para "${colorSeleccionado}":`, memoriasDisponiblesParaColor);
+        
         const memoriaActual = memoriaSelector.value;
         
-        if (memoriasBase.length > 0) {
-            memoriaSelector.innerHTML = memoriasBase.map(memoria => 
+        if (memoriasDisponiblesParaColor.length > 0) {
+            memoriaSelector.innerHTML = memoriasDisponiblesParaColor.map(memoria => 
                 `<option value="${memoria}" ${memoria === memoriaActual ? 'selected' : ''}>${memoria}</option>`
             ).join('');
             
             // Si la memoria actual ya no está disponible, seleccionar la primera
-            if (!memoriasBase.includes(memoriaActual) && memoriasBase.length > 0) {
-                memoriaSelector.value = memoriasBase[0];
+            if (!memoriasDisponiblesParaColor.includes(memoriaActual)) {
+                memoriaSelector.value = memoriasDisponiblesParaColor[0];
+            }
+        }
+    }
+    
+    // ✅ FILTRAR COLORES SEGÚN LA MEMORIA SELECCIONADA
+    if (colorSelector && selectorCambiado === 'memoria' && memoriaSeleccionada) {
+        // Obtener solo los colores que tienen variantes con esta memoria
+        const coloresDisponiblesParaMemoria = [...new Set(
+            producto.variantes
+                .filter(v => v.memoria === memoriaSeleccionada)
+                .map(v => v.color)
+                .filter(c => c && c.trim() !== '')
+        )];
+        
+        const colorActual = colorSelector.value;
+        
+        if (coloresDisponiblesParaMemoria.length > 0) {
+            colorSelector.innerHTML = coloresDisponiblesParaMemoria.map(color => 
+                `<option value="${color}" ${color === colorActual ? 'selected' : ''}>${color}</option>`
+            ).join('');
+            
+            // Si el color actual ya no está disponible, seleccionar el primero
+            if (!coloresDisponiblesParaMemoria.includes(colorActual)) {
+                colorSelector.value = coloresDisponiblesParaMemoria[0];
             }
         }
     }

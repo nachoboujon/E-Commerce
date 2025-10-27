@@ -292,18 +292,135 @@
     }
 }
 
-/* ========== TABLETS ========== */
+/* ========== TABLETS Y PANTALLAS MEDIANAS ========== */
+
+/* Tablets pequeñas y medianas (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
+    /* Sidebar más estrecha */
     .container aside {
-        width: 240px;
+        width: 220px;
+        padding: 25px 18px;
     }
 
+    /* Logo ajustado */
+    .container aside header img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .logoName {
+        font-size: 20px;
+    }
+
+    /* Navegación compacta */
+    .container aside nav ul li button,
+    .container aside nav ul li a {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    .container aside nav ul li i {
+        font-size: 16px;
+    }
+
+    /* Contenido principal */
     main {
-        padding: 30px 25px;
+        padding: 25px 20px;
+        width: calc(100% - 220px);
     }
 
+    /* Header */
+    .main-header {
+        margin-bottom: 25px;
+    }
+
+    .main-header h2 {
+        font-size: 26px;
+    }
+
+    /* Banner mayorista */
+    .banner-mayorista {
+        padding: 18px 20px;
+        margin: 20px 0;
+    }
+
+    .banner-mayorista h3 {
+        font-size: 20px;
+    }
+
+    .banner-mayorista p {
+        font-size: 14px;
+    }
+
+    /* Grid de productos: 2 columnas */
     .ContentProducts {
         grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+    }
+
+    /* Tarjetas de producto ajustadas */
+    .Product {
+        padding: 16px;
+    }
+
+    .Product img {
+        height: 180px;
+    }
+
+    .ProductInfo h3 {
+        font-size: 17px;
+    }
+
+    .ProductDescription {
+        font-size: 13px;
+        max-height: 60px;
+    }
+
+    .ProductPrice {
+        font-size: 22px;
+    }
+
+    .ProductStock {
+        font-size: 13px;
+    }
+
+    .botonAddCart {
+        padding: 11px 16px;
+        font-size: 14px;
+    }
+
+    /* Selectores de variantes */
+    .product-variant {
+        margin: 10px 0;
+    }
+
+    .product-variant label {
+        font-size: 12px;
+    }
+
+    .variant-selector,
+    .battery-info {
+        font-size: 13px;
+        padding: 7px 10px;
+    }
+
+    /* Footer compacto */
+    .footerText {
+        font-size: 12px;
     }
 }
+
+/* Tablets grandes (1025px - 1024px) */
+@media (min-width: 1025px) and (max-width: 1024px) {
+    /* Esta media query está vacía intencionalmente */
+    /* Pantallas mayores a 1024px usan el diseño base de style.css */
+}
+
+/* ========== NOTA IMPORTANTE ========== */
+/* 
+   Pantallas mayores a 1024px (laptops, desktops):
+   ✅ Usan el diseño base de style.css sin modificaciones
+   ✅ Grid automático: repeat(auto-fill, minmax(300px, 1fr))
+   ✅ Sin media queries adicionales para mantener el diseño original
+*/
 

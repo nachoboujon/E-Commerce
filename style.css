@@ -139,12 +139,12 @@ body {
 .logo-image {
     width: 150px;
     height: 150px;
-    object-fit: contain;
+    object-fit: cover;
     margin: 0 auto 20px;
     display: block;
     transition: var(--transition);
     background: var(--crl-white);
-    border-radius: 25px;
+    border-radius: 50%; /* Circular */
     padding: 20px;
     box-shadow: 0 8px 24px rgba(255,255,255,0.15);
 }
@@ -780,139 +780,10 @@ body {
 /* =================================================================
    RESPONSIVE DESIGN
    ================================================================= */
-@media (max-width: 1024px) {
-    .container aside {
-        width: 240px;
-    }
-    
-    .ContentProducts {
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 25px;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-    
-    .container aside {
-        width: 100%;
-        padding: 25px 20px;
-    }
-    
-    .container aside::after {
-        display: none;
-    }
-    
-    .container main {
-        padding: 25px 20px;
-    }
-    
-    .main-header {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 25px;
-    }
-    
-    .search-bar {
-        min-width: 100%;
-    }
-    
-    .ContentProducts {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    /* Aside móvil */
-    .container aside {
-        height: auto;
-        position: relative;
-    }
-    
-    .container aside nav ul {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    
-    .botonCategory, .botonCarrito {
-        padding: 12px 15px;
-        font-size: 14px;
-    }
-}
-
-/* Móvil pequeño */
-@media (max-width: 480px) {
-    .container aside nav ul {
-        grid-template-columns: 1fr;
-    }
-    
-    .logo-container h1 {
-        font-size: 18px;
-    }
-    
-    .main-header h2 {
-        font-size: 22px;
-    }
-    
-    .Product {
-        max-width: 100%;
-    }
-    
-    .product-image-container {
-        height: 220px;
-    }
-    
-    .ProductInfo h3 {
-        font-size: 16px;
-    }
-    
-    .ProductPrice {
-        font-size: 18px;
-    }
-    
-    .botonAddCart {
-        padding: 10px 15px;
-        font-size: 13px;
-    }
-    
-    /* Carrito móvil */
-    .carrito-item {
-        grid-template-columns: 70px 1fr;
-        gap: 10px;
-        padding: 15px;
-    }
-    
-    .carrito-item-imagen {
-        width: 70px;
-        height: 70px;
-    }
-    
-    /* Perfil móvil */
-    .profile-header {
-        padding: 25px 15px;
-    }
-    
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
-        font-size: 35px;
-    }
-    
-    .profile-name {
-        font-size: 22px;
-    }
-    
-    .tab-button {
-        padding: 12px 20px;
-        font-size: 14px;
-    }
-    
-    .info-item {
-        padding: 12px;
-    }
-}
+/* 
+   ℹ️ NOTA: style-mobile.css maneja móviles (< 768px) y tablets (769px - 1024px)
+   Este archivo maneja el comportamiento base para pantallas grandes (> 1024px)
+*/
 
 
 /* =================================================================
