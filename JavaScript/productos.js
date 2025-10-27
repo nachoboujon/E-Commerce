@@ -724,7 +724,23 @@ function renderizarProductos(productos, contenedorId = 'ContentProducts') {
  */
 function inicializarCambioPrecio() {
     // Agregar listeners para cambios en los selectores
-    document.querySelectorAll('.variant-selector').forEach(selector => {
+    document.querySelectorAll('.color-selector').forEach(selector => {
+        selector.addEventListener('change', function() {
+            const productoId = this.dataset.productId;
+            actualizarSelectoresDinamicos(productoId, 'color');
+            actualizarPrecioProducto(productoId);
+        });
+    });
+    
+    document.querySelectorAll('.memory-selector').forEach(selector => {
+        selector.addEventListener('change', function() {
+            const productoId = this.dataset.productId;
+            actualizarSelectoresDinamicos(productoId, 'memoria');
+            actualizarPrecioProducto(productoId);
+        });
+    });
+    
+    document.querySelectorAll('.battery-selector').forEach(selector => {
         selector.addEventListener('change', function() {
             const productoId = this.dataset.productId;
             actualizarPrecioProducto(productoId);
@@ -740,6 +756,69 @@ function inicializarCambioPrecio() {
     productosConVariantes.forEach(productoId => {
         actualizarPrecioProducto(productoId);
     });
+}
+
+/**
+ * Actualizar selectores dinámicamente según selección actual
+ * @param {string} productoId - ID del producto
+ * @param {string} selectorCambiado - Qué selector cambió ('color', 'memoria', 'bateria')
+ */
+function actualizarSelectoresDinamicos(productoId, selectorCambiado) {
+    const producto = obtenerProductoPorId(productoId);
+    if (!producto || !producto.variantes || producto.variantes.length === 0) return;
+    
+    // Obtener selectores
+    const colorSelector = document.querySelector(`.color-selector[data-product-id="${productoId}"]`);
+    const memoriaSelector = document.querySelector(`.memory-selector[data-product-id="${productoId}"]`);
+    const bateriaSelector = document.querySelector(`.battery-selector[data-product-id="${productoId}"]`);
+    
+    // Obtener selección actual
+    const colorSeleccionado = colorSelector ? colorSelector.value : '';
+    const memoriaSeleccionada = memoriaSelector ? memoriaSelector.value : '';
+    const bateriaSeleccionada = bateriaSelector ? bateriaSelector.value : '';
+    
+    // Filtrar variantes según lo seleccionado
+    let variantesFiltradas = producto.variantes;
+    
+    if (colorSeleccionado && selectorCambiado !== 'color') {
+        variantesFiltradas = variantesFiltradas.filter(v => !v.color || v.color === colorSeleccionado);
+    }
+    if (memoriaSeleccionada && selectorCambiado !== 'memoria') {
+        variantesFiltradas = variantesFiltradas.filter(v => !v.memoria || v.memoria === memoriaSeleccionada);
+    }
+    if (bateriaSeleccionada && selectorCambiado !== 'bateria') {
+        variantesFiltradas = variantesFiltradas.filter(v => !v.bateria || v.bateria === bateriaSeleccionada);
+    }
+    
+    // Actualizar opciones de memoria según color seleccionado
+    if (memoriaSelector && selectorCambiado === 'color') {
+        const memoriasDisponibles = [...new Set(variantesFiltradas.map(v => v.memoria).filter(m => m))];
+        const memoriaActual = memoriaSelector.value;
+        
+        memoriaSelector.innerHTML = memoriasDisponibles.map(memoria => 
+            `<option value="${memoria}" ${memoria === memoriaActual ? 'selected' : ''}>${memoria}</option>`
+        ).join('');
+        
+        // Si la memoria actual ya no está disponible, seleccionar la primera
+        if (!memoriasDisponibles.includes(memoriaActual) && memoriasDisponibles.length > 0) {
+            memoriaSelector.value = memoriasDisponibles[0];
+        }
+    }
+    
+    // Actualizar opciones de batería según color y memoria seleccionados
+    if (bateriaSelector && (selectorCambiado === 'color' || selectorCambiado === 'memoria')) {
+        const bateriasDisponibles = [...new Set(variantesFiltradas.map(v => v.bateria).filter(b => b))];
+        const bateriaActual = bateriaSelector.value;
+        
+        bateriaSelector.innerHTML = bateriasDisponibles.map(bateria => 
+            `<option value="${bateria}" ${bateria === bateriaActual ? 'selected' : ''}>${bateria}</option>`
+        ).join('');
+        
+        // Si la batería actual ya no está disponible, seleccionar la primera
+        if (!bateriasDisponibles.includes(bateriaActual) && bateriasDisponibles.length > 0) {
+            bateriaSelector.value = bateriasDisponibles[0];
+        }
+    }
 }
 
 /**
@@ -759,15 +838,15 @@ function actualizarPrecioProducto(productoId) {
     const memoriaSeleccionada = memoriaSelector ? memoriaSelector.value : '';
     const bateriaSeleccionada = bateriaSelector ? bateriaSelector.value : '';
     
-    // Buscar precio y stock de la variante
+    // Buscar precio y stock de la variante exacta
     let precioVariante = producto.precio; // Precio base por defecto
     let stockVariante = producto.stock; // Stock base por defecto
     
-    // Buscar coincidencia exacta primero (color + memoria + batería)
+    // Buscar coincidencia exacta (color + memoria + batería)
     let varianteEncontrada = producto.variantes.find(v => 
-        (v.color === colorSeleccionado || !v.color) &&
-        (v.memoria === memoriaSeleccionada || !v.memoria) &&
-        (v.bateria === bateriaSeleccionada || !v.bateria)
+        (v.color === colorSeleccionado || !v.color || !colorSeleccionado) &&
+        (v.memoria === memoriaSeleccionada || !v.memoria || !memoriaSeleccionada) &&
+        (v.bateria === bateriaSeleccionada || !v.bateria || !bateriaSeleccionada)
     );
     
     if (varianteEncontrada) {
