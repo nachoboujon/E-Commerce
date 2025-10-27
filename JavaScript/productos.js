@@ -723,11 +723,22 @@ function renderizarProductos(productos, contenedorId = 'ContentProducts') {
  * Inicializar event listeners para cambio de precio dinámico
  */
 function inicializarCambioPrecio() {
+    // Agregar listeners para cambios en los selectores
     document.querySelectorAll('.variant-selector').forEach(selector => {
         selector.addEventListener('change', function() {
             const productoId = this.dataset.productId;
             actualizarPrecioProducto(productoId);
         });
+    });
+    
+    // Actualizar precio inicial de productos con variantes
+    const productosConVariantes = new Set();
+    document.querySelectorAll('.variant-selector').forEach(selector => {
+        productosConVariantes.add(selector.dataset.productId);
+    });
+    
+    productosConVariantes.forEach(productoId => {
+        actualizarPrecioProducto(productoId);
     });
 }
 
@@ -831,12 +842,22 @@ function actualizarPrecioProducto(productoId) {
  * @returns {string} - HTML de la tarjeta
  */
 function crearTarjetaProducto(producto) {
+    // 💰 Si hay variantes, usar la primera variante como precio/stock inicial
+    let precioInicial = producto.precio;
+    let stockInicial = producto.stock;
+    
+    if (producto.variantes && producto.variantes.length > 0) {
+        const primeraVariante = producto.variantes[0];
+        precioInicial = primeraVariante.precio || producto.precio;
+        stockInicial = primeraVariante.stock || producto.stock;
+    }
+    
     // 🔍 Verificar stock disponible (considerando lo que hay en el carrito)
     const carritoStr = localStorage.getItem('carritoCell');
     const carrito = carritoStr ? JSON.parse(carritoStr) : [];
     const enCarrito = carrito.find(item => item.id === producto.id);
     const cantidadEnCarrito = enCarrito ? enCarrito.cantidad : 0;
-    const stockDisponible = producto.stock - cantidadEnCarrito;
+    const stockDisponible = stockInicial - cantidadEnCarrito;
     const sinStock = stockDisponible <= 0;
     
     // Crear badges (pueden ser múltiples)
@@ -874,32 +895,45 @@ function crearTarjetaProducto(producto) {
         }
     }
     
-    // ✨ SELECTORES DE VARIANTES (Color y Memoria)
-    const selectorColor = producto.colores && producto.colores.length > 0 ? `
+    // ✨ SELECTORES DE VARIANTES - Generados dinámicamente desde variantes o arrays base
+    
+    // Obtener opciones únicas de las variantes si existen
+    let coloresDisponibles = [];
+    let memoriasDisponibles = [];
+    let bateriasDisponibles = [];
+    
+    if (producto.variantes && producto.variantes.length > 0) {
+        // Extraer opciones únicas de las variantes
+        coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c))];
+        memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m))];
+        bateriasDisponibles = [...new Set(producto.variantes.map(v => v.bateria).filter(b => b))];
+    } else {
+        // Usar arrays base si no hay variantes
+        coloresDisponibles = producto.colores || [];
+        memoriasDisponibles = producto.memorias || [];
+    }
+    
+    const selectorColor = coloresDisponibles.length > 0 ? `
         <div class="product-variant">
             <label><i class="fas fa-palette"></i> Color:</label>
             <select class="variant-selector color-selector" data-product-id="${producto.id}">
-                ${producto.colores.map((color, index) => 
+                ${coloresDisponibles.map((color, index) => 
                     `<option value="${color}" ${index === 0 ? 'selected' : ''}>${color}</option>`
                 ).join('')}
             </select>
         </div>
     ` : '';
     
-    const selectorMemoria = producto.memorias && producto.memorias.length > 0 ? `
+    const selectorMemoria = memoriasDisponibles.length > 0 ? `
         <div class="product-variant">
             <label><i class="fas fa-memory"></i> Memoria:</label>
             <select class="variant-selector memory-selector" data-product-id="${producto.id}">
-                ${producto.memorias.map((memoria, index) => 
+                ${memoriasDisponibles.map((memoria, index) => 
                     `<option value="${memoria}" ${index === 0 ? 'selected' : ''}>${memoria}</option>`
                 ).join('')}
             </select>
         </div>
     ` : '';
-    
-    // Selector de batería (si hay variantes con diferentes baterías)
-    const bateriasDisponibles = producto.variantes ? 
-        [...new Set(producto.variantes.map(v => v.bateria).filter(b => b))] : [];
     
     const selectorBateria = bateriasDisponibles.length > 0 ? `
         <div class="product-variant">
@@ -947,7 +981,12 @@ function crearTarjetaProducto(producto) {
                 
                 <div class="product-footer">
                     <div class="price-stock">
-                        <p class="ProductPrice" id="precio-${producto.id}" data-precio-base="${producto.precio}">$${producto.precio.toLocaleString()} ${precioAnterior}</p>
+                        <p class="ProductPrice" id="precio-${producto.id}" 
+                           data-precio-base="${producto.precio}" 
+                           data-precio-actual="${precioInicial}"
+                           data-stock-actual="${stockInicial}">
+                            $${precioInicial.toLocaleString()} ${precioAnterior}
+                        </p>
                         ${sinStock ? 
                             '<span class="ProductStock" style="color: #f44336;"><i class="fas fa-times-circle"></i> Sin Stock</span>' :
                             `<span class="ProductStock"><i class="fas fa-check-circle"></i> Stock: ${stockDisponible}</span>`
