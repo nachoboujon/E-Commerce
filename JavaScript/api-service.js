@@ -5,7 +5,8 @@
 
 // Configuración de la API
 const API_CONFIG = {
-    baseURL: 'http://localhost:3000/api',
+    // 🌐 Usar variable de entorno si existe, sino intentar localhost
+    baseURL: window.BACKEND_URL || 'http://localhost:3000/api',
     timeout: 10000
 };
 

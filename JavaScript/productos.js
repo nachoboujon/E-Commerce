@@ -1152,7 +1152,7 @@ function generarEstrellas(rating) {
 // ============================================================
 
 // Sistema de versiones para forzar actualización de imágenes
-const VERSION_IMAGENES = '5.0';
+const VERSION_IMAGENES = '5.1';
 const VERSION_KEY = 'versionImagenesPhoneSpot';
 
 // Verificar si necesitamos actualizar por nueva versión
@@ -1161,6 +1161,7 @@ if (versionActual !== VERSION_IMAGENES) {
     console.log('🔄 Detectada nueva versión de imágenes. Actualizando productos...');
     localStorage.removeItem(DB_KEY);
     localStorage.setItem(VERSION_KEY, VERSION_IMAGENES);
+    console.log('✅ Productos actualizados a versión:', VERSION_IMAGENES);
 }
 
 // Asegurar que existan productos iniciales
