@@ -748,8 +748,9 @@ function actualizarPrecioProducto(productoId) {
     const memoriaSeleccionada = memoriaSelector ? memoriaSelector.value : '';
     const bateriaSeleccionada = bateriaSelector ? bateriaSelector.value : '';
     
-    // Buscar precio de la variante
+    // Buscar precio y stock de la variante
     let precioVariante = producto.precio; // Precio base por defecto
+    let stockVariante = producto.stock; // Stock base por defecto
     
     // Buscar coincidencia exacta primero (color + memoria + batería)
     let varianteEncontrada = producto.variantes.find(v => 
@@ -760,7 +761,23 @@ function actualizarPrecioProducto(productoId) {
     
     if (varianteEncontrada) {
         precioVariante = varianteEncontrada.precio;
+        stockVariante = varianteEncontrada.stock || producto.stock;
     }
+    
+    // 🔍 Verificar stock disponible (considerando lo que hay en el carrito)
+    const carritoStr = localStorage.getItem('carritoCell');
+    const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+    const enCarrito = carrito.filter(item => {
+        if (item.id !== productoId) return false;
+        if (!item.varianteSeleccionada) return true;
+        // Comparar variante específica
+        return item.varianteSeleccionada.color === colorSeleccionado &&
+               item.varianteSeleccionada.memoria === memoriaSeleccionada &&
+               item.varianteSeleccionada.bateria === bateriaSeleccionada;
+    });
+    const cantidadEnCarrito = enCarrito.reduce((sum, item) => sum + item.cantidad, 0);
+    const stockDisponible = stockVariante - cantidadEnCarrito;
+    const sinStock = stockDisponible <= 0;
     
     // Actualizar precio en la UI
     const precioElement = document.getElementById(`precio-${productoId}`);
@@ -771,6 +788,40 @@ function actualizarPrecioProducto(productoId) {
         
         precioElement.innerHTML = `$${precioVariante.toLocaleString()} ${precioAnterior}`;
         precioElement.dataset.precioActual = precioVariante;
+        precioElement.dataset.stockActual = stockVariante;
+    }
+    
+    // Actualizar stock en la UI
+    const productoCard = document.querySelector(`.Product[data-id="${productoId}"]`);
+    if (productoCard) {
+        const stockElement = productoCard.querySelector('.ProductStock');
+        const botonAgregar = productoCard.querySelector('.botonAddCart');
+        
+        if (stockElement) {
+            if (sinStock) {
+                stockElement.innerHTML = '<i class="fas fa-times-circle"></i> Sin Stock';
+                stockElement.style.color = '#f44336';
+            } else {
+                stockElement.innerHTML = `<i class="fas fa-check-circle"></i> Stock: ${stockDisponible}`;
+                stockElement.style.color = '';
+            }
+        }
+        
+        if (botonAgregar) {
+            if (sinStock) {
+                botonAgregar.disabled = true;
+                botonAgregar.innerHTML = '<i class="fas fa-ban"></i> Agotado';
+                botonAgregar.style.background = '#ccc';
+                botonAgregar.style.cursor = 'not-allowed';
+                botonAgregar.style.opacity = '0.6';
+            } else {
+                botonAgregar.disabled = false;
+                botonAgregar.innerHTML = '<i class="fas fa-cart-plus"></i> Agregar';
+                botonAgregar.style.background = '';
+                botonAgregar.style.cursor = '';
+                botonAgregar.style.opacity = '';
+            }
+        }
     }
 }
 

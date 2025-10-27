@@ -286,10 +286,13 @@ function inicializarEventos() {
                     bateria: bateriaSelector ? bateriaSelector.value : null
                 };
                 
-                // Obtener precio actual (puede ser diferente si cambió por variante)
+                // Obtener precio y stock actual (puede ser diferente si cambió por variante)
                 const precioElement = productoCard.querySelector('.ProductPrice');
                 const precioActual = precioElement.dataset.precioActual || producto.precio;
+                const stockActual = precioElement.dataset.stockActual || producto.stock;
+                
                 producto.precio = parseFloat(precioActual);
+                producto.stock = parseInt(stockActual);
                 producto.varianteSeleccionada = varianteSeleccionada;
                 
             } else {

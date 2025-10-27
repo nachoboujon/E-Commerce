@@ -421,14 +421,14 @@
                             </label>
                             <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 2px solid #e9ecef;">
                                 <p style="font-size: 13px; color: #6c757d; margin-bottom: 10px;">
-                                    <i class="fas fa-info-circle"></i> <strong>Define precios diferentes según color, memoria y/o batería.</strong>
+                                    <i class="fas fa-info-circle"></i> <strong>Define precios y stock independiente por variante.</strong>
                                 </p>
                                 <p style="font-size: 12px; color: #6c757d; margin-bottom: 15px;">
-                                    ✍️ Escribe libremente las especificaciones de cada variante. Los campos son opcionales, 
-                                    completa solo los que necesites. Si no configuras variantes, se usará el precio base.
+                                    ✍️ Cada variante puede tener su propio precio y stock. Los campos color/memoria/batería son opcionales, 
+                                    completa solo los que necesites. Si no configuras variantes, se usará el precio y stock base.
                                 </p>
                                 <p style="font-size: 12px; color: #28a745; margin-bottom: 15px; font-weight: 600;">
-                                    💡 Ejemplo: Color: "Negro" | Memoria: "128GB" | Batería: "90%" | Precio: $800
+                                    💡 Ejemplo: Color: "Negro" | Memoria: "128GB" | Batería: "90%" | Precio: $800 | Stock: 5
                                 </p>
                                 
                                 <button type="button" onclick="agregarVariante()" 
@@ -494,7 +494,7 @@
                     <div style="display: flex; gap: 15px;">
                         <button type="submit" class="btn-submit" style="flex: 1;">
                             <i class="fas fa-plus-circle"></i> AGREGAR PRODUCTO
-                        </button>
+                    </button>
                         <button type="button" onclick="cancelarEdicion()" id="btnCancelar" class="btn-submit" style="flex: 1; background: var(--crl-gray); border-color: var(--crl-gray); display: none;">
                             <i class="fas fa-times"></i> CANCELAR
                         </button>
@@ -781,14 +781,14 @@
                 }
             } else {
                 // MODO AGREGAR: Crear nuevo producto
-                if (Productos.agregarProducto(producto)) {
-                    alert('✅ Producto agregado exitosamente!');
-                    this.reset();
-                    document.getElementById('previewContainer').innerHTML = '<i class="fas fa-image" style="font-size: 40px; color: var(--crl-light-gray);"></i>';
-                    document.getElementById('imagenBase64').value = '';
-                    actualizarEstadisticas();
-                } else {
-                    alert('❌ Error al agregar el producto');
+            if (Productos.agregarProducto(producto)) {
+                alert('✅ Producto agregado exitosamente!');
+                this.reset();
+                document.getElementById('previewContainer').innerHTML = '<i class="fas fa-image" style="font-size: 40px; color: var(--crl-light-gray);"></i>';
+                document.getElementById('imagenBase64').value = '';
+                actualizarEstadisticas();
+            } else {
+                alert('❌ Error al agregar el producto');
                 }
             }
         });
@@ -922,17 +922,17 @@
         document.getElementById('bateria').addEventListener('input', actualizarVisibilidadVariantes);
         
         // Agregar una nueva variante de precio
-        function agregarVariante(color = '', memoria = '', bateria = '', precio = '') {
+        function agregarVariante(color = '', memoria = '', bateria = '', precio = '', stock = '') {
             const container = document.getElementById('variantes-container');
             const varianteId = `variante-${contadorVariantes++}`;
             
             const varianteHTML = `
-                <div class="variante-item" id="${varianteId}" style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+                <div class="variante-item" id="${varianteId}" style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; display: grid; grid-template-columns: 1fr 1fr 1fr 0.8fr 0.6fr auto; gap: 10px; align-items: end;">
                     <div>
                         <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">
                             <i class="fas fa-palette"></i> Color
                         </label>
-                        <input type="text" class="variante-color" value="${color}" placeholder="Ej: Negro, Azul" 
+                        <input type="text" class="variante-color" value="${color}" placeholder="Ej: Negro" 
                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
                         <small style="font-size: 10px; color: #999;">Opcional</small>
                     </div>
@@ -940,7 +940,7 @@
                         <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">
                             <i class="fas fa-memory"></i> Memoria
                         </label>
-                        <input type="text" class="variante-memoria" value="${memoria}" placeholder="Ej: 128GB, 256GB" 
+                        <input type="text" class="variante-memoria" value="${memoria}" placeholder="128GB" 
                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
                         <small style="font-size: 10px; color: #999;">Opcional</small>
                     </div>
@@ -948,7 +948,7 @@
                         <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">
                             <i class="fas fa-battery-full"></i> Batería
                         </label>
-                        <input type="text" class="variante-bateria" value="${bateria}" placeholder="Ej: 90%, 100%" 
+                        <input type="text" class="variante-bateria" value="${bateria}" placeholder="90%" 
                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
                         <small style="font-size: 10px; color: #999;">Opcional</small>
                     </div>
@@ -957,6 +957,13 @@
                             <i class="fas fa-dollar-sign"></i> Precio $
                         </label>
                         <input type="number" class="variante-precio" value="${precio}" placeholder="850" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">
+                            <i class="fas fa-box"></i> Stock
+                        </label>
+                        <input type="number" class="variante-stock" value="${stock}" placeholder="10" 
                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
                     </div>
                     <button type="button" onclick="eliminarVariante('${varianteId}')" 
@@ -982,13 +989,15 @@
                 const memoria = item.querySelector('.variante-memoria').value.trim();
                 const bateria = item.querySelector('.variante-bateria').value.trim();
                 const precio = parseFloat(item.querySelector('.variante-precio').value);
+                const stock = parseInt(item.querySelector('.variante-stock').value);
                 
-                if (precio && !isNaN(precio)) {
+                if (precio && !isNaN(precio) && stock && !isNaN(stock)) {
                     variantes.push({ 
                         color: color || null, 
                         memoria: memoria || null, 
                         bateria: bateria || null, 
-                        precio 
+                        precio,
+                        stock
                     });
                 }
             });
@@ -1003,7 +1012,7 @@
             contadorVariantes = 0;
             
             variantes.forEach(v => {
-                agregarVariante(v.color || '', v.memoria || '', v.bateria || '', v.precio || '');
+                agregarVariante(v.color || '', v.memoria || '', v.bateria || '', v.precio || '', v.stock || '');
             });
         }
         
