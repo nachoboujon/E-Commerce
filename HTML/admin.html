@@ -420,9 +420,15 @@
                                 <i class="fas fa-dollar-sign"></i> Configurar Precios por Variantes
                             </label>
                             <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 2px solid #e9ecef;">
-                                <p style="font-size: 13px; color: #6c757d; margin-bottom: 15px;">
-                                    <i class="fas fa-info-circle"></i> Define precios diferentes según memoria y/o batería. 
-                                    Si no configuras variantes, se usará el precio base.
+                                <p style="font-size: 13px; color: #6c757d; margin-bottom: 10px;">
+                                    <i class="fas fa-info-circle"></i> <strong>Define precios diferentes según color, memoria y/o batería.</strong>
+                                </p>
+                                <p style="font-size: 12px; color: #6c757d; margin-bottom: 15px;">
+                                    ✍️ Escribe libremente las especificaciones de cada variante. Los campos son opcionales, 
+                                    completa solo los que necesites. Si no configuras variantes, se usará el precio base.
+                                </p>
+                                <p style="font-size: 12px; color: #28a745; margin-bottom: 15px; font-weight: 600;">
+                                    💡 Ejemplo: Color: "Negro" | Memoria: "128GB" | Batería: "90%" | Precio: $800
                                 </p>
                                 
                                 <button type="button" onclick="agregarVariante()" 
@@ -916,44 +922,45 @@
         document.getElementById('bateria').addEventListener('input', actualizarVisibilidadVariantes);
         
         // Agregar una nueva variante de precio
-        function agregarVariante(memoria = '', bateria = '', precio = '') {
+        function agregarVariante(color = '', memoria = '', bateria = '', precio = '') {
             const container = document.getElementById('variantes-container');
             const varianteId = `variante-${contadorVariantes++}`;
             
-            const memoriasDisponibles = document.getElementById('memorias').value.split(',').map(m => m.trim()).filter(m => m);
-            const bateriasDisponibles = document.getElementById('bateria').value.split(',').map(b => b.trim()).filter(b => b);
-            
-            const optionsMemoria = memoriasDisponibles.length > 0 
-                ? memoriasDisponibles.map(m => `<option value="${m}" ${m === memoria ? 'selected' : ''}>${m}</option>`).join('')
-                : '<option value="">Sin memorias configuradas</option>';
-            
-            const optionsBateria = bateriasDisponibles.length > 0
-                ? bateriasDisponibles.map(b => `<option value="${b}" ${b === bateria ? 'selected' : ''}>${b}</option>`).join('')
-                : '<option value="">Sin baterías configuradas</option>';
-            
             const varianteHTML = `
-                <div class="variante-item" id="${varianteId}" style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; display: flex; gap: 10px; align-items: center;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">Memoria</label>
-                        <select class="variante-memoria" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
-                            <option value="">Sin memoria específica</option>
-                            ${optionsMemoria}
-                        </select>
+                <div class="variante-item" id="${varianteId}" style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+                    <div>
+                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">
+                            <i class="fas fa-palette"></i> Color
+                        </label>
+                        <input type="text" class="variante-color" value="${color}" placeholder="Ej: Negro, Azul" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
+                        <small style="font-size: 10px; color: #999;">Opcional</small>
                     </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">Batería</label>
-                        <select class="variante-bateria" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
-                            <option value="">Sin batería específica</option>
-                            ${optionsBateria}
-                        </select>
+                    <div>
+                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">
+                            <i class="fas fa-memory"></i> Memoria
+                        </label>
+                        <input type="text" class="variante-memoria" value="${memoria}" placeholder="Ej: 128GB, 256GB" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
+                        <small style="font-size: 10px; color: #999;">Opcional</small>
                     </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">Precio $</label>
-                        <input type="number" class="variante-precio" value="${precio}" placeholder="Ej: 850" 
+                    <div>
+                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">
+                            <i class="fas fa-battery-full"></i> Batería
+                        </label>
+                        <input type="text" class="variante-bateria" value="${bateria}" placeholder="Ej: 90%, 100%" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
+                        <small style="font-size: 10px; color: #999;">Opcional</small>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">
+                            <i class="fas fa-dollar-sign"></i> Precio $
+                        </label>
+                        <input type="number" class="variante-precio" value="${precio}" placeholder="850" 
                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
                     </div>
                     <button type="button" onclick="eliminarVariante('${varianteId}')" 
-                            style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; align-self: end;">
+                            style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; height: 38px;">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -971,12 +978,18 @@
         function obtenerVariantes() {
             const variantes = [];
             document.querySelectorAll('.variante-item').forEach(item => {
-                const memoria = item.querySelector('.variante-memoria').value;
-                const bateria = item.querySelector('.variante-bateria').value;
+                const color = item.querySelector('.variante-color').value.trim();
+                const memoria = item.querySelector('.variante-memoria').value.trim();
+                const bateria = item.querySelector('.variante-bateria').value.trim();
                 const precio = parseFloat(item.querySelector('.variante-precio').value);
                 
                 if (precio && !isNaN(precio)) {
-                    variantes.push({ memoria, bateria, precio });
+                    variantes.push({ 
+                        color: color || null, 
+                        memoria: memoria || null, 
+                        bateria: bateria || null, 
+                        precio 
+                    });
                 }
             });
             return variantes;
@@ -990,7 +1003,7 @@
             contadorVariantes = 0;
             
             variantes.forEach(v => {
-                agregarVariante(v.memoria, v.bateria, v.precio);
+                agregarVariante(v.color || '', v.memoria || '', v.bateria || '', v.precio || '');
             });
         }
         

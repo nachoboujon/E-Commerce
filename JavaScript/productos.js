@@ -740,23 +740,26 @@ function actualizarPrecioProducto(productoId) {
     if (!producto || !producto.variantes || producto.variantes.length === 0) return;
     
     // Obtener selección actual
+    const colorSelector = document.querySelector(`.color-selector[data-product-id="${productoId}"]`);
     const memoriaSelector = document.querySelector(`.memory-selector[data-product-id="${productoId}"]`);
     const bateriaSelector = document.querySelector(`.battery-selector[data-product-id="${productoId}"]`);
     
+    const colorSeleccionado = colorSelector ? colorSelector.value : '';
     const memoriaSeleccionada = memoriaSelector ? memoriaSelector.value : '';
     const bateriaSeleccionada = bateriaSelector ? bateriaSelector.value : '';
     
     // Buscar precio de la variante
     let precioVariante = producto.precio; // Precio base por defecto
     
-    for (const variante of producto.variantes) {
-        const memoriaMatch = !variante.memoria || variante.memoria === memoriaSeleccionada;
-        const bateriaMatch = !variante.bateria || variante.bateria === bateriaSeleccionada;
-        
-        if (memoriaMatch && bateriaMatch) {
-            precioVariante = variante.precio;
-            break;
-        }
+    // Buscar coincidencia exacta primero (color + memoria + batería)
+    let varianteEncontrada = producto.variantes.find(v => 
+        (v.color === colorSeleccionado || !v.color) &&
+        (v.memoria === memoriaSeleccionada || !v.memoria) &&
+        (v.bateria === bateriaSeleccionada || !v.bateria)
+    );
+    
+    if (varianteEncontrada) {
+        precioVariante = varianteEncontrada.precio;
     }
     
     // Actualizar precio en la UI
