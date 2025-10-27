@@ -758,7 +758,13 @@ function inicializarCambioPrecio() {
  */
 function actualizarSelectoresDinamicos(productoId, selectorCambiado) {
     const producto = obtenerProductoPorId(productoId);
-    if (!producto || !producto.variantes || producto.variantes.length === 0) return;
+    if (!producto) return;
+    
+    // Si no hay variantes, no filtrar selectores (mostrar todas las opciones base)
+    if (!producto.variantes || producto.variantes.length === 0) {
+        console.log(`ℹ️ Sin variantes para producto ${productoId}, no se filtran selectores`);
+        return;
+    }
     
     // Obtener selectores
     const colorSelector = document.querySelector(`.color-selector[data-product-id="${productoId}"]`);
@@ -780,16 +786,19 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado) {
     
     // Actualizar opciones de memoria según color seleccionado
     if (memoriaSelector && selectorCambiado === 'color') {
-        const memoriasDisponibles = [...new Set(variantesFiltradas.map(v => v.memoria).filter(m => m))];
+        // Usar memorias del producto base, no filtrar por variantes
+        const memoriasBase = producto.memorias || [];
         const memoriaActual = memoriaSelector.value;
         
-        memoriaSelector.innerHTML = memoriasDisponibles.map(memoria => 
-            `<option value="${memoria}" ${memoria === memoriaActual ? 'selected' : ''}>${memoria}</option>`
-        ).join('');
-        
-        // Si la memoria actual ya no está disponible, seleccionar la primera
-        if (!memoriasDisponibles.includes(memoriaActual) && memoriasDisponibles.length > 0) {
-            memoriaSelector.value = memoriasDisponibles[0];
+        if (memoriasBase.length > 0) {
+            memoriaSelector.innerHTML = memoriasBase.map(memoria => 
+                `<option value="${memoria}" ${memoria === memoriaActual ? 'selected' : ''}>${memoria}</option>`
+            ).join('');
+            
+            // Si la memoria actual ya no está disponible, seleccionar la primera
+            if (!memoriasBase.includes(memoriaActual) && memoriasBase.length > 0) {
+                memoriaSelector.value = memoriasBase[0];
+            }
         }
     }
 }
@@ -800,7 +809,7 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado) {
  */
 function actualizarPrecioProducto(productoId) {
     const producto = obtenerProductoPorId(productoId);
-    if (!producto || !producto.variantes || producto.variantes.length === 0) return;
+    if (!producto) return;
     
     // Obtener selección actual (solo color y memoria)
     const colorSelector = document.querySelector(`.color-selector[data-product-id="${productoId}"]`);
@@ -812,16 +821,25 @@ function actualizarPrecioProducto(productoId) {
     // Buscar precio y stock de la variante exacta (color + memoria)
     let precioVariante = producto.precio; // Precio base por defecto
     let stockVariante = producto.stock; // Stock base por defecto
+    let bateriaVariante = producto.bateria || 'No especificado'; // Batería base
     
-    // Buscar coincidencia exacta (color + memoria)
-    let varianteEncontrada = producto.variantes.find(v => 
-        (v.color === colorSeleccionado || !v.color || !colorSeleccionado) &&
-        (v.memoria === memoriaSeleccionada || !v.memoria || !memoriaSeleccionada)
-    );
-    
-    if (varianteEncontrada) {
-        precioVariante = varianteEncontrada.precio;
-        stockVariante = varianteEncontrada.stock || producto.stock;
+    // Si hay variantes configuradas, buscar coincidencia
+    if (producto.variantes && producto.variantes.length > 0) {
+        let varianteEncontrada = producto.variantes.find(v => 
+            (v.color === colorSeleccionado || !v.color || !colorSeleccionado) &&
+            (v.memoria === memoriaSeleccionada || !v.memoria || !memoriaSeleccionada)
+        );
+        
+        if (varianteEncontrada) {
+            precioVariante = varianteEncontrada.precio;
+            stockVariante = varianteEncontrada.stock || producto.stock;
+            bateriaVariante = varianteEncontrada.bateria || bateriaVariante;
+            console.log(`✅ Variante encontrada: ${colorSeleccionado} + ${memoriaSeleccionada} = $${precioVariante}`);
+        } else {
+            console.log(`⚠️ No hay variante para: ${colorSeleccionado} + ${memoriaSeleccionada}, usando precio base: $${precioVariante}`);
+        }
+    } else {
+        console.log(`ℹ️ Producto sin variantes, usando precio base: $${precioVariante}`);
     }
     
     // 🔍 Verificar stock disponible (considerando lo que hay en el carrito)
@@ -884,8 +902,8 @@ function actualizarPrecioProducto(productoId) {
         
         // Actualizar texto de batería
         const bateriaElement = document.getElementById(`bateria-${productoId}`);
-        if (bateriaElement && varianteEncontrada && varianteEncontrada.bateria) {
-            bateriaElement.textContent = varianteEncontrada.bateria;
+        if (bateriaElement) {
+            bateriaElement.textContent = bateriaVariante;
         }
     }
 }
@@ -956,23 +974,23 @@ function crearTarjetaProducto(producto) {
     let memoriasDisponibles = [];
     let bateriasDisponibles = [];
     
+    // ✅ SIEMPRE usar los campos "Colores disponibles" y "Memorias GB" para los selectores
+    // Las variantes SOLO se usan para cambiar precios/stock, NO para mostrar opciones
+    coloresDisponibles = producto.colores || [];
+    memoriasDisponibles = producto.memorias || [];
+    
+    // Si hay variantes, también extraer baterías de ellas
     if (producto.variantes && producto.variantes.length > 0) {
-        // Extraer opciones únicas de las variantes
-        coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c && c.trim() !== ''))];
-        memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
         bateriasDisponibles = [...new Set(producto.variantes.map(v => v.bateria).filter(b => b && b.trim() !== ''))];
-        
-        // Debug: Ver qué colores se extrajeron
-        console.log(`Producto ${producto.id} - Variantes:`, producto.variantes);
-        console.log(`Colores disponibles extraídos:`, coloresDisponibles);
-        console.log(`Memorias disponibles extraídas:`, memoriasDisponibles);
-        console.log(`Baterías disponibles extraídas:`, bateriasDisponibles);
+        console.log(`✅ Producto ${producto.id} tiene ${producto.variantes.length} variantes configuradas`);
     } else {
-        // Usar arrays base si no hay variantes
-        coloresDisponibles = producto.colores || [];
-        memoriasDisponibles = producto.memorias || [];
-        console.log(`Producto ${producto.id} - Sin variantes, usando arrays base`);
+        bateriasDisponibles = [];
+        console.log(`⚠️ Producto ${producto.id} sin variantes de precio`);
     }
+    
+    console.log(`📦 Selectores del producto ${producto.id}:`);
+    console.log(`  - Colores: [${coloresDisponibles.join(', ')}]`);
+    console.log(`  - Memorias: [${memoriasDisponibles.join(', ')}]`);
     
     const selectorColor = coloresDisponibles.length > 0 ? `
         <div class="product-variant">
