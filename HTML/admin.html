@@ -413,6 +413,30 @@
                         </div>
                     </div>
 
+                    <!-- ✨ CONFIGURADOR DE PRECIOS POR VARIANTES -->
+                    <div class="form-row" id="variantes-section" style="display: none;">
+                        <div class="form-group form-group-full">
+                            <label style="font-size: 16px; font-weight: 700; margin-bottom: 15px; display: block;">
+                                <i class="fas fa-dollar-sign"></i> Configurar Precios por Variantes
+                            </label>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 2px solid #e9ecef;">
+                                <p style="font-size: 13px; color: #6c757d; margin-bottom: 15px;">
+                                    <i class="fas fa-info-circle"></i> Define precios diferentes según memoria y/o batería. 
+                                    Si no configuras variantes, se usará el precio base.
+                                </p>
+                                
+                                <button type="button" onclick="agregarVariante()" 
+                                        style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 15px;">
+                                    <i class="fas fa-plus"></i> Agregar Variante de Precio
+                                </button>
+                                
+                                <div id="variantes-container" style="display: flex; flex-direction: column; gap: 12px;">
+                                    <!-- Las variantes se agregarán aquí dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group form-group-full">
                             <label for="descripcion">Descripción (opcional)</label>
@@ -709,6 +733,9 @@
                 ? memoriasStr.split(',').map(m => m.trim()).filter(m => m) 
                 : [];
             
+            // ✨ Obtener variantes de precio configuradas
+            const variantes = obtenerVariantes();
+            
             const producto = {
                 nombre: formData.get('nombre'),
                 categoria: formData.get('categoria'),
@@ -721,6 +748,7 @@
                 imagen: imagenBase64, // Guardar imagen en base64
                 colores: coloresArray, // Array de colores
                 memorias: memoriasArray, // Array de memorias
+                variantes: variantes, // 💰 Variantes de precio (memoria + batería)
                 esNuevo: formData.get('esNuevo') === 'on',
                 enOferta: formData.get('enOferta') === 'on',
                 esAmericano: formData.get('esAmericano') === 'on' // 🇺🇸 Americano
@@ -827,6 +855,12 @@
                 if (enOferta) enOferta.checked = producto.enOferta || false;
                 if (esAmericano) esAmericano.checked = producto.esAmericano || false;
                 
+                // Cargar variantes de precio si existen
+                actualizarVisibilidadVariantes();
+                if (producto.variantes && producto.variantes.length > 0) {
+                    cargarVariantes(producto.variantes);
+                }
+                
                 // Mostrar la imagen actual
                 if (producto.imagen) {
                     const imagenBase64 = document.getElementById('imagenBase64');
@@ -860,12 +894,115 @@
             }, 100); // Esperar 100ms para que la pestaña se active
         }
         
+        // ========== GESTIÓN DE VARIANTES DE PRECIOS ==========
+        
+        let contadorVariantes = 0;
+        
+        // Mostrar u ocultar sección de variantes según si hay memorias o baterías
+        function actualizarVisibilidadVariantes() {
+            const memorias = document.getElementById('memorias').value.trim();
+            const variacionesBateria = document.getElementById('bateria').value.trim();
+            const variantesSection = document.getElementById('variantes-section');
+            
+            if (memorias || variacionesBateria) {
+                variantesSection.style.display = 'block';
+            } else {
+                variantesSection.style.display = 'none';
+            }
+        }
+        
+        // Agregar listeners a los inputs para mostrar la sección de variantes
+        document.getElementById('memorias').addEventListener('input', actualizarVisibilidadVariantes);
+        document.getElementById('bateria').addEventListener('input', actualizarVisibilidadVariantes);
+        
+        // Agregar una nueva variante de precio
+        function agregarVariante(memoria = '', bateria = '', precio = '') {
+            const container = document.getElementById('variantes-container');
+            const varianteId = `variante-${contadorVariantes++}`;
+            
+            const memoriasDisponibles = document.getElementById('memorias').value.split(',').map(m => m.trim()).filter(m => m);
+            const bateriasDisponibles = document.getElementById('bateria').value.split(',').map(b => b.trim()).filter(b => b);
+            
+            const optionsMemoria = memoriasDisponibles.length > 0 
+                ? memoriasDisponibles.map(m => `<option value="${m}" ${m === memoria ? 'selected' : ''}>${m}</option>`).join('')
+                : '<option value="">Sin memorias configuradas</option>';
+            
+            const optionsBateria = bateriasDisponibles.length > 0
+                ? bateriasDisponibles.map(b => `<option value="${b}" ${b === bateria ? 'selected' : ''}>${b}</option>`).join('')
+                : '<option value="">Sin baterías configuradas</option>';
+            
+            const varianteHTML = `
+                <div class="variante-item" id="${varianteId}" style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; display: flex; gap: 10px; align-items: center;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">Memoria</label>
+                        <select class="variante-memoria" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
+                            <option value="">Sin memoria específica</option>
+                            ${optionsMemoria}
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">Batería</label>
+                        <select class="variante-bateria" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
+                            <option value="">Sin batería específica</option>
+                            ${optionsBateria}
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">Precio $</label>
+                        <input type="number" class="variante-precio" value="${precio}" placeholder="Ej: 850" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px;">
+                    </div>
+                    <button type="button" onclick="eliminarVariante('${varianteId}')" 
+                            style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; align-self: end;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', varianteHTML);
+        }
+        
+        // Eliminar variante
+        function eliminarVariante(varianteId) {
+            document.getElementById(varianteId).remove();
+        }
+        
+        // Obtener todas las variantes configuradas
+        function obtenerVariantes() {
+            const variantes = [];
+            document.querySelectorAll('.variante-item').forEach(item => {
+                const memoria = item.querySelector('.variante-memoria').value;
+                const bateria = item.querySelector('.variante-bateria').value;
+                const precio = parseFloat(item.querySelector('.variante-precio').value);
+                
+                if (precio && !isNaN(precio)) {
+                    variantes.push({ memoria, bateria, precio });
+                }
+            });
+            return variantes;
+        }
+        
+        // Cargar variantes en modo edición
+        function cargarVariantes(variantes) {
+            if (!variantes || variantes.length === 0) return;
+            
+            document.getElementById('variantes-container').innerHTML = '';
+            contadorVariantes = 0;
+            
+            variantes.forEach(v => {
+                agregarVariante(v.memoria, v.bateria, v.precio);
+            });
+        }
+        
         // Función para cancelar edición y limpiar formulario
         function cancelarEdicion() {
             productoEnEdicion = null;
             document.getElementById('formAgregarProducto').reset();
             document.getElementById('previewContainer').innerHTML = '<i class="fas fa-image" style="font-size: 40px; color: var(--crl-light-gray);"></i>';
             document.getElementById('imagenBase64').value = '';
+            document.getElementById('variantes-container').innerHTML = '';
+            document.getElementById('variantes-section').style.display = 'none';
+            contadorVariantes = 0;
             
             const titulo = document.querySelector('#formAgregarProducto h3');
             titulo.innerHTML = '<i class="fas fa-plus"></i> Agregar Nuevo Producto';

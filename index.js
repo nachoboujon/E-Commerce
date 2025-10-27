@@ -79,7 +79,23 @@ function inicializarListenerCarrito() {
  */
 function agregarAlCarrito(producto) {
     // 🔍 Verificar stock disponible
-    const productoExistente = carrito.find(item => item.id === producto.id);
+    // Para productos con variantes, buscar por ID + variante
+    const productoExistente = carrito.find(item => {
+        if (item.id !== producto.id) return false;
+        
+        // Si no hay variantes, es el mismo producto
+        if (!producto.varianteSeleccionada && !item.varianteSeleccionada) return true;
+        
+        // Si hay variantes, deben coincidir todas
+        if (producto.varianteSeleccionada && item.varianteSeleccionada) {
+            return item.varianteSeleccionada.color === producto.varianteSeleccionada.color &&
+                   item.varianteSeleccionada.memoria === producto.varianteSeleccionada.memoria &&
+                   item.varianteSeleccionada.bateria === producto.varianteSeleccionada.bateria;
+        }
+        
+        return false;
+    });
+    
     const cantidadEnCarrito = productoExistente ? productoExistente.cantidad : 0;
     const stockDisponible = producto.stock - cantidadEnCarrito;
     
@@ -104,8 +120,17 @@ function agregarAlCarrito(producto) {
     // Actualizar interfaz
     actualizarBadgeCarrito();
     
-    // Mostrar notificación
-    mostrarNotificacion('Producto agregado al carrito ✓');
+    // Mostrar notificación con variante si existe
+    let mensaje = 'Producto agregado al carrito ✓';
+    if (producto.varianteSeleccionada) {
+        const detalles = [];
+        if (producto.varianteSeleccionada.memoria) detalles.push(producto.varianteSeleccionada.memoria);
+        if (producto.varianteSeleccionada.bateria) detalles.push(`Batería: ${producto.varianteSeleccionada.bateria}`);
+        if (detalles.length > 0) {
+            mensaje = `Producto agregado ✓\n${detalles.join(' - ')}`;
+        }
+    }
+    mostrarNotificacion(mensaje);
     
     // 🔄 Disparar evento de actualización de carrito
     dispararEventoCarrito('productoAgregado', producto);
@@ -248,7 +273,25 @@ function inicializarEventos() {
             // Si hay ID, buscar el producto completo
             let producto;
             if (productId && window.Productos) {
-                producto = window.Productos.obtenerProductoPorId(productId);
+                producto = JSON.parse(JSON.stringify(window.Productos.obtenerProductoPorId(productId))); // Copia profunda
+                
+                // 💰 Capturar variantes seleccionadas
+                const colorSelector = productoCard.querySelector('.color-selector');
+                const memoriaSelector = productoCard.querySelector('.memory-selector');
+                const bateriaSelector = productoCard.querySelector('.battery-selector');
+                
+                const varianteSeleccionada = {
+                    color: colorSelector ? colorSelector.value : null,
+                    memoria: memoriaSelector ? memoriaSelector.value : null,
+                    bateria: bateriaSelector ? bateriaSelector.value : null
+                };
+                
+                // Obtener precio actual (puede ser diferente si cambió por variante)
+                const precioElement = productoCard.querySelector('.ProductPrice');
+                const precioActual = precioElement.dataset.precioActual || producto.precio;
+                producto.precio = parseFloat(precioActual);
+                producto.varianteSeleccionada = varianteSeleccionada;
+                
             } else {
                 // Fallback: obtener desde DOM
                 const nombre = productoCard.querySelector('h3').textContent;
