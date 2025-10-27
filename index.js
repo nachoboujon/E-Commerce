@@ -86,11 +86,10 @@ function agregarAlCarrito(producto) {
         // Si no hay variantes, es el mismo producto
         if (!producto.varianteSeleccionada && !item.varianteSeleccionada) return true;
         
-        // Si hay variantes, deben coincidir todas
+        // Si hay variantes, deben coincidir (solo color y memoria, no batería)
         if (producto.varianteSeleccionada && item.varianteSeleccionada) {
             return item.varianteSeleccionada.color === producto.varianteSeleccionada.color &&
-                   item.varianteSeleccionada.memoria === producto.varianteSeleccionada.memoria &&
-                   item.varianteSeleccionada.bateria === producto.varianteSeleccionada.bateria;
+                   item.varianteSeleccionada.memoria === producto.varianteSeleccionada.memoria;
         }
         
         return false;
@@ -278,12 +277,12 @@ function inicializarEventos() {
                 // 💰 Capturar variantes seleccionadas
                 const colorSelector = productoCard.querySelector('.color-selector');
                 const memoriaSelector = productoCard.querySelector('.memory-selector');
-                const bateriaSelector = productoCard.querySelector('.battery-selector');
+                const bateriaInfo = productoCard.querySelector('.battery-info');
                 
                 const varianteSeleccionada = {
                     color: colorSelector ? colorSelector.value : null,
                     memoria: memoriaSelector ? memoriaSelector.value : null,
-                    bateria: bateriaSelector ? bateriaSelector.value : null
+                    bateria: bateriaInfo ? bateriaInfo.textContent.trim() : null
                 };
                 
                 // Obtener precio y stock actual (puede ser diferente si cambió por variante)
