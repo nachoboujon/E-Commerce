@@ -78,8 +78,16 @@ function inicializarListenerCarrito() {
  * @param {Object} producto - Objeto con datos del producto
  */
 function agregarAlCarrito(producto) {
-    // Buscar si el producto ya existe en el carrito
+    // 🔍 Verificar stock disponible
     const productoExistente = carrito.find(item => item.id === producto.id);
+    const cantidadEnCarrito = productoExistente ? productoExistente.cantidad : 0;
+    const stockDisponible = producto.stock - cantidadEnCarrito;
+    
+    // Si no hay stock disponible, no permitir agregar
+    if (stockDisponible <= 0) {
+        mostrarNotificacion('⚠️ Producto sin stock disponible', 'warning');
+        return;
+    }
     
     if (productoExistente) {
         // Si existe, aumentar cantidad

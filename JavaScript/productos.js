@@ -722,8 +722,19 @@ function renderizarProductos(productos, contenedorId = 'ContentProducts') {
  * @returns {string} - HTML de la tarjeta
  */
 function crearTarjetaProducto(producto) {
+    // 🔍 Verificar stock disponible (considerando lo que hay en el carrito)
+    const carritoStr = localStorage.getItem('carritoCell');
+    const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+    const enCarrito = carrito.find(item => item.id === producto.id);
+    const cantidadEnCarrito = enCarrito ? enCarrito.cantidad : 0;
+    const stockDisponible = producto.stock - cantidadEnCarrito;
+    const sinStock = stockDisponible <= 0;
+    
     // Crear badges (pueden ser múltiples)
     let badges = '';
+    if (sinStock) {
+        badges += '<div class="product-badge out-of-stock">⚠️ Agotado</div>';
+    }
     if (producto.esNuevo) {
         badges += '<div class="product-badge">Nuevo</div>';
     }
@@ -812,9 +823,15 @@ function crearTarjetaProducto(producto) {
                 <div class="product-footer">
                     <div class="price-stock">
                         <p class="ProductPrice">$${producto.precio.toLocaleString()} ${precioAnterior}</p>
-                        <span class="ProductStock"><i class="fas fa-check-circle"></i> Stock: ${producto.stock}</span>
+                        ${sinStock ? 
+                            '<span class="ProductStock" style="color: #f44336;"><i class="fas fa-times-circle"></i> Sin Stock</span>' :
+                            `<span class="ProductStock"><i class="fas fa-check-circle"></i> Stock: ${stockDisponible}</span>`
+                        }
                     </div>
-                    <button class="botonAddCart" data-product-id="${producto.id}"><i class="fas fa-cart-plus"></i> Agregar</button>
+                    ${sinStock ? 
+                        '<button class="botonAddCart" disabled style="background: #ccc; cursor: not-allowed; opacity: 0.6;"><i class="fas fa-ban"></i> Agotado</button>' :
+                        `<button class="botonAddCart" data-product-id="${producto.id}"><i class="fas fa-cart-plus"></i> Agregar</button>`
+                    }
                     ${botonesAdmin}
                 </div>
             </div>
