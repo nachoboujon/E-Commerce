@@ -25,6 +25,11 @@ async function fetchAPI(endpoint, options = {}) {
     const sesion = window.Auth ? Auth.obtenerSesion() : null;
     const token = sesion ? sesion.token : null;
     
+    // 🔍 DEBUG: Log para verificar token
+    console.log('🔍 API Request:', endpoint);
+    console.log('👤 Sesión:', sesion);
+    console.log('🔑 Token:', token ? 'Presente ✅' : 'NO presente ❌');
+    
     // Configurar headers
     const headers = {
         'Content-Type': 'application/json',
@@ -33,6 +38,9 @@ async function fetchAPI(endpoint, options = {}) {
     
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        console.log('✅ Token agregado al header Authorization');
+    } else {
+        console.warn('⚠️ NO hay token JWT - Las operaciones de admin FALLARÁN');
     }
     
     try {

@@ -108,23 +108,39 @@ async function login(identificador, password) {
     
     // 🔐 Intentar autenticar con el backend API para obtener token JWT
     let tokenJWT = null;
-    if (window.BACKEND_DISPONIBLE) {
-        try {
-            // Llamar al endpoint de login del backend
-            const response = await fetch(`${window.APIService ? window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : 'https://phonespot-backend.onrender.com/api' : 'https://phonespot-backend.onrender.com/api'}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: usuario.email, password: password })
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                tokenJWT = data.token;
-                console.log('✅ Token JWT obtenido del backend');
-            }
-        } catch (error) {
-            console.warn('⚠️ No se pudo obtener token del backend:', error.message);
+    const backendURL = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3000/api' 
+        : 'https://phonespot-backend.onrender.com/api';
+    
+    console.log('🔐 Intentando obtener token JWT del backend...');
+    console.log('📡 Backend URL:', backendURL);
+    console.log('📧 Email:', usuario.email);
+    
+    try {
+        // Llamar al endpoint de login del backend
+        const loginURL = `${backendURL}/auth/login`;
+        console.log('🔗 Login URL:', loginURL);
+        
+        const response = await fetch(loginURL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: usuario.email, password: password })
+        });
+        
+        console.log('📨 Respuesta del backend:', response.status, response.statusText);
+        
+        if (response.ok) {
+            const data = await response.json();
+            tokenJWT = data.token;
+            console.log('✅ Token JWT obtenido del backend:', tokenJWT ? 'Sí ✅' : 'No ❌');
+            console.log('🔑 Token completo:', tokenJWT);
+        } else {
+            const errorData = await response.json();
+            console.error('❌ Error del backend:', errorData);
         }
+    } catch (error) {
+        console.error('❌ Error al conectar con backend:', error.message);
+        console.error('📍 Stack:', error.stack);
     }
     
     // Guardar sesión en localStorage con token
