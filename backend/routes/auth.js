@@ -471,5 +471,69 @@ router.get('/diagnostico-jwt', (req, res) => {
     });
 });
 
+// ============================================================
+// CREAR ADMIN (ENDPOINT TEMPORAL - SOLO PARA SETUP INICIAL)
+// ============================================================
+router.post('/crear-admin-inicial', async (req, res) => {
+    try {
+        console.log('🔧 Creando usuario admin inicial...');
+        
+        // Verificar si ya existe
+        const adminExistente = await Usuario.findOne({ email: 'nboujon7@gmail.com' });
+        
+        if (adminExistente) {
+            console.log('⚠️ Admin ya existe, eliminando para recrear...');
+            await Usuario.deleteOne({ email: 'nboujon7@gmail.com' });
+        }
+        
+        // Crear nuevo admin
+        const adminData = {
+            username: 'admin',
+            password: 'Nacho2005', // Se hasheará automáticamente
+            email: 'nboujon7@gmail.com',
+            nombre: 'Nacho Boujon',
+            telefono: '1234567890',
+            direccion: 'Buenos Aires, Argentina',
+            rol: 'administrador',
+            verificado: true,
+            activo: true,
+            fechaRegistro: new Date()
+        };
+        
+        const nuevoAdmin = new Usuario(adminData);
+        await nuevoAdmin.save();
+        
+        console.log('✅ Admin creado exitosamente');
+        console.log('   Username:', nuevoAdmin.username);
+        console.log('   Email:', nuevoAdmin.email);
+        console.log('   Rol:', nuevoAdmin.rol);
+        
+        res.json({
+            success: true,
+            message: 'Usuario admin creado exitosamente',
+            admin: {
+                username: nuevoAdmin.username,
+                email: nuevoAdmin.email,
+                rol: nuevoAdmin.rol,
+                verificado: nuevoAdmin.verificado,
+                activo: nuevoAdmin.activo
+            },
+            instrucciones: {
+                email: 'nboujon7@gmail.com',
+                password: 'Nacho2005',
+                siguiente_paso: 'Ahora puedes iniciar sesión con estas credenciales'
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error creando admin:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al crear usuario admin',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
 
