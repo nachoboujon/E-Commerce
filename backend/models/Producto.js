@@ -33,6 +33,15 @@ const productoSchema = new mongoose.Schema({
         enum: ['Nuevo', 'Americano'],
         default: 'Nuevo'
     },
+    bateria: {
+        type: String,
+        trim: true,
+        default: null
+    },
+    esAmericano: {
+        type: Boolean,
+        default: false
+    },
     // Campos adicionales para variantes
     colores: {
         type: [String],
