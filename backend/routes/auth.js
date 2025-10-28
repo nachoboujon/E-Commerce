@@ -103,7 +103,12 @@ router.post('/login', async (req, res) => {
     try {
         const { identificador, password } = req.body;
         
+        console.log('🔐 LOGIN REQUEST:');
+        console.log('   Identificador:', identificador);
+        console.log('   Password recibido:', password ? '✅ Presente' : '❌ Vacío');
+        
         if (!identificador || !password) {
+            console.log('❌ Faltan credenciales');
             return res.status(400).json({
                 success: false,
                 message: 'Usuario/Email y contraseña son requeridos'
@@ -111,21 +116,37 @@ router.post('/login', async (req, res) => {
         }
         
         // Buscar usuario por username o email
+        console.log('🔍 Buscando usuario en MongoDB...');
         const usuario = await Usuario.findOne({
             $or: [{ username: identificador }, { email: identificador }]
         });
         
         if (!usuario) {
+            console.log('❌ Usuario NO encontrado');
+            console.log('   Buscando por:', identificador);
             return res.status(401).json({
                 success: false,
                 message: 'Usuario o contraseña incorrectos'
             });
         }
         
+        console.log('✅ Usuario encontrado:');
+        console.log('   Username:', usuario.username);
+        console.log('   Email:', usuario.email);
+        console.log('   Rol:', usuario.rol);
+        console.log('   Password hash:', usuario.password ? usuario.password.substring(0, 20) + '...' : 'NO HAY');
+        
         // Verificar contraseña
+        console.log('🔐 Verificando contraseña con bcrypt...');
+        console.log('   Password ingresado:', password);
+        console.log('   Hash en BD:', usuario.password ? 'Presente' : 'NO HAY');
+        
         const passwordValida = await usuario.compararPassword(password);
         
+        console.log('📊 Resultado comparación:', passwordValida ? '✅ VÁLIDA' : '❌ INVÁLIDA');
+        
         if (!passwordValida) {
+            console.log('❌ Contraseña incorrecta');
             return res.status(401).json({
                 success: false,
                 message: 'Usuario o contraseña incorrectos'
@@ -145,13 +166,19 @@ router.post('/login', async (req, res) => {
         await usuario.save();
         
         // Generar token JWT
+        console.log('🔑 Generando token JWT...');
+        console.log('   JWT_SECRET:', process.env.JWT_SECRET ? 'Configurado ✅' : 'Usando default');
+        
         const token = jwt.sign(
             { id: usuario._id, username: usuario.username, rol: usuario.rol },
             process.env.JWT_SECRET || 'phonespot_secret_key_2025',
             { expiresIn: '7d' }
         );
         
-        res.json({
+        console.log('✅ Token generado:', token ? token.substring(0, 30) + '...' : 'NULL');
+        console.log('📏 Longitud token:', token ? token.length : 0);
+        
+        const respuesta = {
             success: true,
             message: 'Login exitoso',
             token,
@@ -166,7 +193,14 @@ router.post('/login', async (req, res) => {
                 verificado: usuario.verificado,
                 fechaRegistro: usuario.fechaRegistro
             }
-        });
+        };
+        
+        console.log('📤 Enviando respuesta exitosa al cliente');
+        console.log('   success:', respuesta.success);
+        console.log('   token presente:', !!respuesta.token);
+        console.log('   sesion.rol:', respuesta.sesion.rol);
+        
+        res.json(respuesta);
         
     } catch (error) {
         console.error('Error en login:', error);
