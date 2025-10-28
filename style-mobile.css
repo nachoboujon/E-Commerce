@@ -5,105 +5,102 @@
 /* ========== MENÚ HAMBURGUESA - DISEÑO MODERNO ========== */
 .mobile-menu-btn {
     display: none;
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1002;
-    background: #ffffff;
-    color: #000;
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mobile-menu-btn:hover {
-    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
-    transform: translateY(-2px);
-}
-
-.mobile-menu-btn:active {
-    transform: translateY(0) scale(0.95);
-}
-
-.mobile-menu-btn i {
-    transition: transform 0.3s ease;
-    font-size: 22px;
 }
 
 .mobile-overlay {
     display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    z-index: 999;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.mobile-overlay.active {
-    display: block;
-    opacity: 1;
-}
-
-/* Prevenir scroll cuando el menú está abierto */
-body.menu-open {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
 }
 
 /* ========== RESPONSIVE MÓVILES ========== */
 @media (max-width: 768px) {
-    /* Botón hamburguesa visible */
-    .mobile-menu-btn {
-        display: block;
+    /* Prevenir scroll horizontal en móvil */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
     }
 
-    /* Animación del botón hamburguesa */
+    /* Botón hamburguesa */
     .mobile-menu-btn {
         display: flex !important;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1002;
+        background: #ffffff;
+        color: #000;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        font-size: 22px;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-menu-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Overlay oscuro */
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        z-index: 999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .mobile-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    /* Bloquear scroll cuando el menú está abierto */
+    body.menu-open {
+        overflow: hidden;
     }
 
     /* Contenedor principal */
     .container {
         flex-direction: column;
         min-height: 100vh;
-    }
-
-    /* Barra lateral en móvil - DISEÑO ULTRA MODERNO */
-    .container aside {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 300px;
-        z-index: 1000;
-        transform: translateX(-100%);
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow-y: auto;
         overflow-x: hidden;
-        padding: 25px 20px 20px 20px !important;
-        box-shadow: 8px 0 40px rgba(0,0,0,0.3);
-        display: flex;
-        flex-direction: column;
-        background: linear-gradient(180deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+        position: relative;
+        width: 100%;
     }
 
+    /* Menú lateral COMPLETAMENTE FUERA DE PANTALLA */
+    .container aside {
+        position: fixed !important;
+        top: 0 !important;
+        left: -320px !important; /* Fuera de pantalla */
+        height: 100vh !important;
+        width: 280px !important;
+        z-index: 1000 !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 25px 20px 20px 20px !important;
+        box-shadow: 8px 0 40px rgba(0,0,0,0.3) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        background: linear-gradient(180deg, #000000 0%, #0a0a0a 50%, #000000 100%) !important;
+    }
+
+    /* Menú ACTIVO - se mueve a left: 0 */
     .container aside.active {
-        transform: translateX(0);
+        left: 0 !important;
     }
 
     /* Efecto de brillo sutil en el borde derecho */
@@ -332,9 +329,13 @@ body.menu-open {
     /* Contenido principal */
     main {
         width: 100% !important;
+        max-width: 100vw !important;
         padding: 15px !important;
-        margin-top: 70px;
+        margin-top: 70px !important;
+        margin-left: 0 !important;
         min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
     }
 
     /* Header principal */
@@ -415,17 +416,22 @@ body.menu-open {
     .ContentProducts {
         grid-template-columns: 1fr !important;
         gap: 15px !important;
-        padding: 0;
+        padding: 0 !important;
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
     }
 
     /* Tarjeta de producto */
     .Product {
+        width: 100%;
         max-width: 100%;
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         background: #fff;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-sizing: border-box;
     }
 
     .Product:active {
@@ -434,8 +440,10 @@ body.menu-open {
 
     .Product img {
         width: 100%;
+        max-width: 100%;
         height: 220px;
         object-fit: cover;
+        display: block;
     }
 
     .ProductInfo {
@@ -543,13 +551,13 @@ body.menu-open {
 
     /* Barra lateral más estrecha en móviles pequeños */
     .container aside {
-        width: 260px;
-        left: -260px;
+        width: 260px !important;
+        left: -280px !important;
         padding: 15px !important;
     }
 
     .container aside.active {
-        transform: translateX(260px);
+        left: 0 !important;
     }
 
     .container aside header img {
