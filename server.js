@@ -8,8 +8,10 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 
-// Cargar variables de entorno
-require('dotenv').config();
+// Cargar variables de entorno (solo en desarrollo local)
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 // Crear aplicación Express
 const app = express();
@@ -38,6 +40,14 @@ app.use(express.static(__dirname));
 // ============================================================
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/phonespot_db';
+
+// 🔍 DEBUG: Verificar variables de entorno
+console.log('🔍 Variables de entorno cargadas:');
+console.log('   NODE_ENV:', process.env.NODE_ENV || 'no configurado');
+console.log('   MONGODB_URI:', process.env.MONGODB_URI ? '✅ Configurado' : '❌ NO configurado');
+console.log('   JWT_SECRET:', process.env.JWT_SECRET ? '✅ Configurado' : '❌ NO configurado');
+console.log('   FRONTEND_URL:', process.env.FRONTEND_URL || 'no configurado');
+console.log('   Intentando conectar a:', MONGODB_URI.includes('mongodb+srv') ? 'MongoDB Atlas ☁️' : 'MongoDB Local 💻');
 
 mongoose.connect(MONGODB_URI)
     .then(() => {
