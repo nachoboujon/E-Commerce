@@ -21,8 +21,26 @@ const app = express();
 // ============================================================
 
 // CORS - Permitir peticiones desde el frontend
+const allowedOrigins = [
+    'https://phonespotsj1.netlify.app',
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'http://localhost:3000',
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || '*', // En producción, especificar tu URL de Netlify
+    origin: function (origin, callback) {
+        // Permitir peticiones sin origen (como apps móviles o curl)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('❌ CORS bloqueado para origen:', origin);
+            callback(null, true); // En desarrollo, permitir todos
+        }
+    },
     credentials: true,
     optionsSuccessStatus: 200
 };
@@ -39,7 +57,12 @@ app.use(express.static(__dirname));
 // CONEXIÓN A MONGODB
 // ============================================================
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/phonespot_db';
+// Intentar múltiples nombres de variables para MongoDB
+const MONGODB_URI = process.env.MONGODB_URI 
+    || process.env.MONGO_URL 
+    || process.env.DATABASE_URL 
+    || process.env.MONGO_URI
+    || 'mongodb://localhost:27017/phonespot_db';
 
 // 🔍 DEBUG: Verificar variables de entorno
 console.log('🔍 Variables de entorno cargadas:');
