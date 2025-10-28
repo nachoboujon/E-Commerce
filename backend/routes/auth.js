@@ -414,5 +414,28 @@ router.post('/reenviar-codigo', verificarToken, async (req, res) => {
     }
 });
 
+// ============================================================
+// DIAGNÓSTICO JWT (solo para debugging)
+// ============================================================
+router.get('/diagnostico-jwt', (req, res) => {
+    const jwtSecret = process.env.JWT_SECRET;
+    const defaultSecret = 'phonespot_secret_key_2025';
+    
+    res.json({
+        success: true,
+        diagnostico: {
+            JWT_SECRET_configurado: !!jwtSecret,
+            usando_default: !jwtSecret,
+            secret_actual: jwtSecret ? 'Configurado ✅' : `Default (${defaultSecret})`,
+            coincide_con_esperado: jwtSecret === defaultSecret,
+            NODE_ENV: process.env.NODE_ENV || 'no configurado',
+            timestamp: new Date().toISOString()
+        },
+        recomendacion: !jwtSecret || jwtSecret !== defaultSecret 
+            ? `⚠️ Configura JWT_SECRET=${defaultSecret} en Railway` 
+            : '✅ JWT_SECRET correcto'
+    });
+});
+
 module.exports = router;
 

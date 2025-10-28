@@ -43,10 +43,21 @@ exports.verificarToken = async (req, res, next) => {
         next();
         
     } catch (error) {
-        console.error('Error en verificación de token:', error);
+        console.error('❌ Error en verificación de token:', error.message);
+        console.error('🔑 JWT_SECRET configurado:', process.env.JWT_SECRET ? 'SÍ ✅' : 'NO ❌ (usando default)');
+        console.error('📋 Tipo de error:', error.name);
+        
+        let mensaje = 'Token inválido o expirado';
+        if (error.name === 'JsonWebTokenError') {
+            mensaje = 'Token inválido - JWT_SECRET no coincide';
+        } else if (error.name === 'TokenExpiredError') {
+            mensaje = 'Token expirado - inicie sesión nuevamente';
+        }
+        
         return res.status(401).json({
             success: false,
-            message: 'Token inválido o expirado'
+            message: mensaje,
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
