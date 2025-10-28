@@ -162,12 +162,9 @@ async function login(identificador, password) {
  */
 function logout() {
     localStorage.removeItem('sesionPhoneSpot');
-    // Verificar si estamos en la raíz o en una subcarpeta
-    if (window.location.pathname.includes('/HTML/')) {
-        window.location.href = 'login.html';
-    } else {
-        window.location.href = 'HTML/login.html';
-    }
+    // Usar ruta absoluta para evitar problemas de navegación
+    const baseURL = window.location.origin;
+    window.location.href = `${baseURL}/HTML/login.html`;
 }
 
 /**
