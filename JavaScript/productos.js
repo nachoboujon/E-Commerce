@@ -710,48 +710,26 @@ function renderizarProductos(productos, contenedorId = 'ContentProducts') {
         contenedor.innerHTML += productoHTML;
     });
     
-    // Inicializar cambio de precio dinámico para variantes
-    inicializarCambioPrecio();
-    
-    // Reinicializar event listeners
-    if (window.inicializarEventos) {
-        window.inicializarEventos();
-    }
+    // ⚠️ IMPORTANTE: Usar setTimeout para asegurar que el DOM se actualice ANTES de agregar listeners
+    setTimeout(() => {
+        // Inicializar cambio de precio dinámico para variantes
+        inicializarCambioPrecio();
+        
+        // Reinicializar event listeners
+        if (window.inicializarEventos) {
+            window.inicializarEventos();
+        }
+    }, 100);
 }
 
 /**
  * Inicializar event listeners para cambio de precio dinámico
+ * NOTA: Los onchange ahora están INLINE en el HTML, esta función solo inicializa precios
  */
 function inicializarCambioPrecio() {
-    console.log('🎯 Inicializando event listeners para variantes...');
+    console.log('🎯 INICIALIZANDO PRECIOS DE VARIANTES');
     
-    // Agregar listeners para cambios en los selectores de COLOR
-    const colorSelectores = document.querySelectorAll('.color-selector');
-    console.log(`📋 Encontrados ${colorSelectores.length} selectores de color`);
-    
-    colorSelectores.forEach(selector => {
-        selector.addEventListener('change', function() {
-            const productoId = this.dataset.productId;
-            console.log(`🎨 Cambió color del producto ${productoId} a: ${this.value}`);
-            actualizarSelectoresDinamicos(productoId, 'color');
-            actualizarPrecioProducto(productoId);
-        });
-    });
-    
-    // Agregar listeners para cambios en los selectores de MEMORIA
-    const memoriaSelectores = document.querySelectorAll('.memory-selector');
-    console.log(`📋 Encontrados ${memoriaSelectores.length} selectores de memoria`);
-    
-    memoriaSelectores.forEach(selector => {
-        selector.addEventListener('change', function() {
-            const productoId = this.dataset.productId;
-            console.log(`💾 Cambió memoria del producto ${productoId} a: ${this.value}`);
-            actualizarSelectoresDinamicos(productoId, 'memoria');
-            actualizarPrecioProducto(productoId);
-        });
-    });
-    
-    // Actualizar precio inicial de productos con variantes
+    // Solo inicializar precios de productos con variantes
     const productosConVariantes = new Set();
     document.querySelectorAll('.variant-selector').forEach(selector => {
         productosConVariantes.add(selector.dataset.productId);
@@ -760,14 +738,11 @@ function inicializarCambioPrecio() {
     console.log(`📦 Productos con variantes: ${productosConVariantes.size}`);
     
     productosConVariantes.forEach(productoId => {
-        console.log(`⚙️ Inicializando precio para producto ${productoId}`);
-        // ✅ Primero filtrar selectores según el color inicial
-        actualizarSelectoresDinamicos(productoId, 'color');
-        // Luego actualizar el precio
+        console.log(`⚙️ Inicializando: ${productoId}`);
         actualizarPrecioProducto(productoId);
     });
     
-    console.log('✅ Event listeners inicializados correctamente');
+    console.log('✅ PRECIOS INICIALES LISTOS');
 }
 
 /**
@@ -776,84 +751,9 @@ function inicializarCambioPrecio() {
  * @param {string} selectorCambiado - Qué selector cambió ('color', 'memoria', 'bateria')
  */
 function actualizarSelectoresDinamicos(productoId, selectorCambiado) {
-    const producto = obtenerProductoPorId(productoId);
-    if (!producto) return;
-    
-    // Si no hay variantes, no filtrar selectores (mostrar todas las opciones base)
-    if (!producto.variantes || producto.variantes.length === 0) {
-        console.log(`ℹ️ Sin variantes para producto ${productoId}, no se filtran selectores`);
-        return;
-    }
-    
-    // Obtener selectores
-    const colorSelector = document.querySelector(`.color-selector[data-product-id="${productoId}"]`);
-    const memoriaSelector = document.querySelector(`.memory-selector[data-product-id="${productoId}"]`);
-    
-    // Obtener selección actual
-    const colorSeleccionado = colorSelector ? colorSelector.value : '';
-    const memoriaSeleccionada = memoriaSelector ? memoriaSelector.value : '';
-    
-    // Filtrar variantes según lo seleccionado
-    let variantesFiltradas = producto.variantes;
-    
-    if (colorSeleccionado && selectorCambiado !== 'color') {
-        variantesFiltradas = variantesFiltradas.filter(v => !v.color || v.color === colorSeleccionado);
-    }
-    if (memoriaSeleccionada && selectorCambiado !== 'memoria') {
-        variantesFiltradas = variantesFiltradas.filter(v => !v.memoria || v.memoria === memoriaSeleccionada);
-    }
-    
-    // ✅ FILTRAR MEMORIAS SEGÚN EL COLOR SELECCIONADO
-    if (memoriaSelector && selectorCambiado === 'color' && colorSeleccionado) {
-        // Obtener solo las memorias que tienen variantes con este color
-        const variantesDelColor = producto.variantes.filter(v => v.color === colorSeleccionado);
-        console.log(`🔍 Variantes del color "${colorSeleccionado}":`, variantesDelColor);
-        
-        const memoriasDisponiblesParaColor = [...new Set(
-            variantesDelColor
-                .map(v => v.memoria)
-                .filter(m => m && m.trim() !== '')
-        )];
-        
-        console.log(`💾 Memorias disponibles para "${colorSeleccionado}":`, memoriasDisponiblesParaColor);
-        
-        const memoriaActual = memoriaSelector.value;
-        
-        if (memoriasDisponiblesParaColor.length > 0) {
-            memoriaSelector.innerHTML = memoriasDisponiblesParaColor.map(memoria => 
-                `<option value="${memoria}" ${memoria === memoriaActual ? 'selected' : ''}>${memoria}</option>`
-            ).join('');
-            
-            // Si la memoria actual ya no está disponible, seleccionar la primera
-            if (!memoriasDisponiblesParaColor.includes(memoriaActual)) {
-                memoriaSelector.value = memoriasDisponiblesParaColor[0];
-            }
-        }
-    }
-    
-    // ✅ FILTRAR COLORES SEGÚN LA MEMORIA SELECCIONADA
-    if (colorSelector && selectorCambiado === 'memoria' && memoriaSeleccionada) {
-        // Obtener solo los colores que tienen variantes con esta memoria
-        const coloresDisponiblesParaMemoria = [...new Set(
-            producto.variantes
-                .filter(v => v.memoria === memoriaSeleccionada)
-                .map(v => v.color)
-                .filter(c => c && c.trim() !== '')
-        )];
-        
-        const colorActual = colorSelector.value;
-        
-        if (coloresDisponiblesParaMemoria.length > 0) {
-            colorSelector.innerHTML = coloresDisponiblesParaMemoria.map(color => 
-                `<option value="${color}" ${color === colorActual ? 'selected' : ''}>${color}</option>`
-            ).join('');
-            
-            // Si el color actual ya no está disponible, seleccionar el primero
-            if (!coloresDisponiblesParaMemoria.includes(colorActual)) {
-                colorSelector.value = coloresDisponiblesParaMemoria[0];
-            }
-        }
-    }
+    // POR AHORA, NO HACER NADA - Solo dejar que se actualice el precio
+    // Los selectores ya tienen todas las opciones correctas desde el inicio
+    console.log(`Selectores dinámicos: No se filtran (todas las opciones disponibles)`);
 }
 
 /**
@@ -861,47 +761,64 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado) {
  * @param {string} productoId - ID del producto
  */
 function actualizarPrecioProducto(productoId) {
-    const producto = obtenerProductoPorId(productoId);
-    if (!producto) return;
+    console.log(`\n💰 ===== ACTUALIZANDO PRODUCTO ${productoId} =====`);
     
-    // Obtener selección actual (solo color y memoria)
+    const producto = obtenerProductoPorId(productoId);
+    if (!producto) {
+        console.error(`❌ Producto NO encontrado: ${productoId}`);
+        return;
+    }
+    
+    console.log(`✅ Producto encontrado: ${producto.nombre}`);
+    
+    // Obtener selección actual
     const colorSelector = document.querySelector(`.color-selector[data-product-id="${productoId}"]`);
     const memoriaSelector = document.querySelector(`.memory-selector[data-product-id="${productoId}"]`);
     
     const colorSeleccionado = colorSelector ? colorSelector.value : '';
     const memoriaSeleccionada = memoriaSelector ? memoriaSelector.value : '';
     
+    console.log(`📋 Seleccionado: Color="${colorSeleccionado}", Memoria="${memoriaSeleccionada}"`);
+    
     // Buscar precio y stock de la variante exacta (color + memoria)
     let precioVariante = producto.precio; // Precio base por defecto
     let stockVariante = producto.stock; // Stock base por defecto
     let bateriaVariante = producto.bateria || 'No especificado'; // Batería base
     
-    // Si hay variantes configuradas, buscar coincidencia EXACTA
+    // Si hay variantes configuradas, buscar coincidencia
     if (producto.variantes && producto.variantes.length > 0) {
-        // Buscar variante que coincida EXACTAMENTE con color Y memoria seleccionados
-        let varianteEncontrada = producto.variantes.find(v => {
-            const colorCoincide = !colorSeleccionado || !v.color || v.color === colorSeleccionado;
-            const memoriaCoincide = !memoriaSeleccionada || !v.memoria || v.memoria === memoriaSeleccionada;
-            return colorCoincide && memoriaCoincide;
-        });
+        console.log(`🔍 Buscando variante para: Color="${colorSeleccionado}", Memoria="${memoriaSeleccionada}"`);
+        console.log(`📋 Variantes configuradas (${producto.variantes.length}):`, producto.variantes);
         
-        // Si ambos están seleccionados, buscar coincidencia exacta
-        if (colorSeleccionado && memoriaSeleccionada) {
-            varianteEncontrada = producto.variantes.find(v => 
-                v.color === colorSeleccionado && v.memoria === memoriaSeleccionada
-            );
+        let varianteEncontrada = null;
+        
+        // SOLO buscar variante si hay selección de color O memoria
+        if (colorSeleccionado || memoriaSeleccionada) {
+            // Buscar coincidencia EXACTA
+            varianteEncontrada = producto.variantes.find(v => {
+                const colorCoincide = !colorSeleccionado || v.color === colorSeleccionado;
+                const memoriaCoincide = !memoriaSeleccionada || v.memoria === memoriaSeleccionada;
+                return colorCoincide && memoriaCoincide;
+            });
         }
         
         if (varianteEncontrada) {
-            precioVariante = varianteEncontrada.precio;
-            stockVariante = varianteEncontrada.stock || producto.stock;
+            // ✅ SE ENCONTRÓ VARIANTE - Usar sus valores
+            precioVariante = varianteEncontrada.precio !== undefined ? varianteEncontrada.precio : producto.precio;
+            stockVariante = varianteEncontrada.stock !== undefined ? varianteEncontrada.stock : producto.stock;
             bateriaVariante = varianteEncontrada.bateria || bateriaVariante;
-            console.log(`✅ Variante encontrada: Color="${colorSeleccionado}" + Memoria="${memoriaSeleccionada}" → Precio=$${precioVariante}, Stock=${stockVariante}, Batería=${bateriaVariante}`);
+            
+            console.log(`✅ VARIANTE ENCONTRADA:`);
+            console.log(`   Color: ${varianteEncontrada.color}, Memoria: ${varianteEncontrada.memoria}`);
+            console.log(`   → Precio: $${precioVariante}, Stock: ${stockVariante}, Batería: ${bateriaVariante}`);
         } else {
-            console.log(`⚠️ No hay variante para: Color="${colorSeleccionado}" + Memoria="${memoriaSeleccionada}", usando precio base: $${precioVariante}`);
+            // ❌ NO SE ENCONTRÓ VARIANTE - Usar valores BASE del producto
+            console.log(`⚠️ NO hay variante para: Color="${colorSeleccionado}", Memoria="${memoriaSeleccionada}"`);
+            console.log(`   → Usando VALORES BASE del producto:`);
+            console.log(`   → Precio: $${precioVariante}, Stock: ${stockVariante}, Batería: ${bateriaVariante}`);
         }
     } else {
-        console.log(`ℹ️ Producto sin variantes, usando precio base: $${precioVariante}`);
+        console.log(`ℹ️ Producto sin variantes → Usando valores base: Precio=$${precioVariante}, Stock=${stockVariante}`);
     }
     
     // 🔍 Verificar stock disponible (considerando lo que hay en el carrito)
@@ -918,16 +835,22 @@ function actualizarPrecioProducto(productoId) {
     const stockDisponible = stockVariante - cantidadEnCarrito;
     const sinStock = stockDisponible <= 0;
     
-    // Actualizar precio en la UI
+    // ===== ACTUALIZAR PRECIO EN LA UI =====
     const precioElement = document.getElementById(`precio-${productoId}`);
+    console.log(`Buscando elemento #precio-${productoId}:`, precioElement);
+    
     if (precioElement) {
         const precioAnterior = producto.precioAnterior && precioVariante !== producto.precioAnterior
             ? `<span class="old-price">$${producto.precioAnterior.toLocaleString()}</span>`
             : '';
         
+        console.log(`⏳ Actualizando precio en DOM: $${precioVariante}`);
         precioElement.innerHTML = `$${precioVariante.toLocaleString()} ${precioAnterior}`;
         precioElement.dataset.precioActual = precioVariante;
         precioElement.dataset.stockActual = stockVariante;
+        console.log(`✅ PRECIO ACTUALIZADO: $${precioVariante}`);
+    } else {
+        console.error(`❌ ELEMENTO DE PRECIO NO ENCONTRADO: #precio-${productoId}`);
     }
     
     // Actualizar stock en la UI
@@ -962,12 +885,22 @@ function actualizarPrecioProducto(productoId) {
             }
         }
         
-        // Actualizar texto de batería
+        // ===== ACTUALIZAR BATERÍA EN LA UI =====
         const bateriaElement = document.getElementById(`bateria-${productoId}`);
+        console.log(`Buscando elemento #bateria-${productoId}:`, bateriaElement);
+        
         if (bateriaElement) {
+            console.log(`⏳ Actualizando batería en DOM: ${bateriaVariante}`);
             bateriaElement.textContent = bateriaVariante;
+            console.log(`✅ BATERÍA ACTUALIZADA: ${bateriaVariante}`);
+        } else {
+            console.warn(`⚠️ Elemento de batería NO encontrado`);
         }
+    } else {
+        console.error(`❌ Tarjeta de producto NO encontrada con data-id="${productoId}"`);
     }
+    
+    console.log(`===== FIN ACTUALIZACIÓN ${productoId} =====\n`);
 }
 
 /**
@@ -1036,10 +969,20 @@ function crearTarjetaProducto(producto) {
     let memoriasDisponibles = [];
     let bateriasDisponibles = [];
     
-    // ✅ SIEMPRE usar los campos "Colores disponibles" y "Memorias GB" para los selectores
-    // Las variantes SOLO se usan para cambiar precios/stock, NO para mostrar opciones
+    // ✅ SIEMPRE usar los arrays base primero (colores y memorias)
+    // Esto asegura que los selectores SIEMPRE se muestren si están definidos
     coloresDisponibles = producto.colores || [];
     memoriasDisponibles = producto.memorias || [];
+    
+    // Si NO hay arrays base pero SÍ hay variantes, extraer de las variantes
+    if (coloresDisponibles.length === 0 && producto.variantes && producto.variantes.length > 0) {
+        coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c && c.trim() !== ''))];
+        console.log(`📦 Producto ${producto.id}: Extrayendo colores desde variantes`);
+    }
+    if (memoriasDisponibles.length === 0 && producto.variantes && producto.variantes.length > 0) {
+        memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
+        console.log(`📦 Producto ${producto.id}: Extrayendo memorias desde variantes`);
+    }
     
     // Si hay variantes, también extraer baterías de ellas
     if (producto.variantes && producto.variantes.length > 0) {
@@ -1054,10 +997,14 @@ function crearTarjetaProducto(producto) {
     console.log(`  - Colores: [${coloresDisponibles.join(', ')}]`);
     console.log(`  - Memorias: [${memoriasDisponibles.join(', ')}]`);
     
+    // Generar selector de color con onchange y ontouchend para móvil
     const selectorColor = coloresDisponibles.length > 0 ? `
         <div class="product-variant">
             <label><i class="fas fa-palette"></i> Color:</label>
-            <select class="variant-selector color-selector" data-product-id="${producto.id}">
+            <select class="variant-selector color-selector" 
+                    data-product-id="${producto.id}" 
+                    onchange="window.Productos.actualizarPrecioProducto('${producto.id}')"
+                    ontouchend="setTimeout(() => window.Productos.actualizarPrecioProducto('${producto.id}'), 100)">
                 ${coloresDisponibles.map((color, index) => 
                     `<option value="${color}" ${index === 0 ? 'selected' : ''}>${color}</option>`
                 ).join('')}
@@ -1065,10 +1012,14 @@ function crearTarjetaProducto(producto) {
         </div>
     ` : '';
     
+    // Generar selector de memoria con onchange y ontouchend para móvil
     const selectorMemoria = memoriasDisponibles.length > 0 ? `
         <div class="product-variant">
             <label><i class="fas fa-memory"></i> Memoria:</label>
-            <select class="variant-selector memory-selector" data-product-id="${producto.id}">
+            <select class="variant-selector memory-selector" 
+                    data-product-id="${producto.id}" 
+                    onchange="window.Productos.actualizarPrecioProducto('${producto.id}')"
+                    ontouchend="setTimeout(() => window.Productos.actualizarPrecioProducto('${producto.id}'), 100)">
                 ${memoriasDisponibles.map((memoria, index) => 
                     `<option value="${memoria}" ${index === 0 ? 'selected' : ''}>${memoria}</option>`
                 ).join('')}
@@ -1213,7 +1164,8 @@ window.Productos = {
     validarStockCarrito,
     procesarCompra,
     obtenerMovimientosStock,
-    obtenerHistorialCompras
+    obtenerHistorialCompras,
+    actualizarPrecioProducto  // ✅ EXPORTAR para uso desde HTML inline
 };
 
 console.log('📦 Sistema de gestión de productos cargado');
