@@ -476,6 +476,7 @@ router.get('/diagnostico-jwt', (req, res) => {
 // ============================================================
 router.post('/crear-admin-inicial', async (req, res) => {
     try {
+        const bcrypt = require('bcrypt');
         console.log('🔧 Creando usuario admin inicial...');
         
         // Verificar si ya existe
@@ -486,10 +487,16 @@ router.post('/crear-admin-inicial', async (req, res) => {
             await Usuario.deleteOne({ email: 'nboujon7@gmail.com' });
         }
         
-        // Crear nuevo admin
+        // Hashear password MANUALMENTE (sin depender del hook)
+        console.log('🔐 Hasheando password manualmente...');
+        const salt = await bcrypt.genSalt(10);
+        const passwordHasheada = await bcrypt.hash('Nacho2005', salt);
+        console.log('✅ Password hasheada:', passwordHasheada.substring(0, 20) + '...');
+        
+        // Crear nuevo admin CON PASSWORD YA HASHEADA
         const adminData = {
             username: 'admin',
-            password: 'Nacho2005', // Se hasheará automáticamente
+            password: passwordHasheada, // YA HASHEADA - no pasará por el hook
             email: 'nboujon7@gmail.com',
             nombre: 'Nacho Boujon',
             telefono: '1234567890',
@@ -500,24 +507,34 @@ router.post('/crear-admin-inicial', async (req, res) => {
             fechaRegistro: new Date()
         };
         
-        const nuevoAdmin = new Usuario(adminData);
-        await nuevoAdmin.save();
+        // Insertar directamente en la BD sin triggers
+        const resultado = await Usuario.collection.insertOne(adminData);
+        console.log('✅ Admin insertado directamente en BD');
+        console.log('   ID:', resultado.insertedId);
         
-        console.log('✅ Admin creado exitosamente');
-        console.log('   Username:', nuevoAdmin.username);
-        console.log('   Email:', nuevoAdmin.email);
-        console.log('   Rol:', nuevoAdmin.rol);
+        // Verificar que se guardó
+        const adminGuardado = await Usuario.findOne({ email: 'nboujon7@gmail.com' });
+        console.log('✅ Admin verificado en BD');
+        console.log('   Username:', adminGuardado.username);
+        console.log('   Email:', adminGuardado.email);
+        console.log('   Rol:', adminGuardado.rol);
+        
+        // Probar la password
+        const passwordValida = await bcrypt.compare('Nacho2005', adminGuardado.password);
+        console.log('🧪 Test de password:', passwordValida ? '✅ VÁLIDA' : '❌ INVÁLIDA');
         
         res.json({
             success: true,
             message: 'Usuario admin creado exitosamente',
             admin: {
-                username: nuevoAdmin.username,
-                email: nuevoAdmin.email,
-                rol: nuevoAdmin.rol,
-                verificado: nuevoAdmin.verificado,
-                activo: nuevoAdmin.activo
+                id: adminGuardado._id,
+                username: adminGuardado.username,
+                email: adminGuardado.email,
+                rol: adminGuardado.rol,
+                verificado: adminGuardado.verificado,
+                activo: adminGuardado.activo
             },
+            test_password: passwordValida ? 'Válida ✅' : 'Inválida ❌',
             instrucciones: {
                 email: 'nboujon7@gmail.com',
                 password: 'Nacho2005',
@@ -530,7 +547,29 @@ router.post('/crear-admin-inicial', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al crear usuario admin',
-            error: error.message
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
+// ============================================================
+// LISTAR USUARIOS (DEBUG)
+// ============================================================
+router.get('/listar-usuarios', async (req, res) => {
+    try {
+        const usuarios = await Usuario.find({}, 'username email rol verificado activo').limit(10);
+        const total = await Usuario.countDocuments();
+        
+        res.json({
+            success: true,
+            total: total,
+            usuarios: usuarios
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
         });
     }
 });
