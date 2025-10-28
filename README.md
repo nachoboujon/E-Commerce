@@ -4,6 +4,17 @@ Sistema completo de e-commerce con frontend HTML/CSS/JS y backend Node.js + Expr
 
 ---
 
+## 🚨 ¿Problemas al Desplegar en Netlify?
+
+Si los cambios no se visualizan en Netlify o los productos no se actualizan:
+
+1. **Solución Rápida (5 min):** Lee [README-DEPLOYMENT.md](README-DEPLOYMENT.md)
+2. **Guía Completa de Despliegue:** Lee [DEPLOY.md](DEPLOY.md)
+
+**TL;DR:** Netlify solo sirve archivos estáticos. El backend necesita desplegarse por separado en Render/Railway.
+
+---
+
 ## 📁 Estructura del Proyecto
 
 ```

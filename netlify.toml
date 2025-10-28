@@ -2,14 +2,21 @@
 
 [build]
   # No hay proceso de build para frontend estático
-  command = "echo 'Frontend estático - Backend en Render.com'"
+  command = "echo 'PhoneSpot E-Commerce - Frontend conectado a Render.com'"
   publish = "."
   
 [build.environment]
   NODE_VERSION = "18"
 
 # Variables de entorno para el frontend
-# (El backend está en Render.com, no en Netlify)
+# (El backend está en Render.com: https://phonespot-backend.onrender.com)
+
+# Context-specific deploy settings
+[context.production]
+  command = "echo 'Deploying production build'"
+
+[context.deploy-preview]
+  command = "echo 'Deploying preview build'"
 
 # Headers para caché y seguridad
 [[headers]]
@@ -25,25 +32,26 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
 
 # Cache para assets estáticos (CSS, JS, imágenes)
+# ⚠️ Cache reducido para permitir actualizaciones más rápidas
 [[headers]]
   for = "/style*.css"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=3600, must-revalidate"
 
 [[headers]]
   for = "/JavaScript/*.js"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=3600, must-revalidate"
 
 [[headers]]
   for = "/*.js"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=3600, must-revalidate"
 
 [[headers]]
   for = "/IMG/*"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=86400, immutable"
 
 # Redirects para navegación
 [[redirects]]

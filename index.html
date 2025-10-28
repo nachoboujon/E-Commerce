@@ -107,15 +107,8 @@
     </div>
     
     <!-- JavaScript del sitio -->
-    <script>
-        // Limpiar localStorage para forzar actualización de productos con nuevas imágenes
-        const CURRENT_VERSION = '5.0';
-        const storedVersion = localStorage.getItem('versionImagenesPhoneSpot');
-        if (storedVersion !== CURRENT_VERSION) {
-            console.log('🔄 Limpiando productos antiguos...');
-            localStorage.removeItem('productosPhoneSpot');
-        }
-    </script>
+    <!-- ⚠️ IMPORTANTE: config.js debe cargarse PRIMERO -->
+    <script src="JavaScript/config.js"></script>
     <script src="JavaScript/api-service.js"></script>
     <script src="JavaScript/auth.js"></script>
     <script src="JavaScript/productos.js"></script>
