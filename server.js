@@ -19,7 +19,12 @@ const app = express();
 // ============================================================
 
 // CORS - Permitir peticiones desde el frontend
-app.use(cors());
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || '*', // En producción, especificar tu URL de Netlify
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 // Body Parser - Para leer JSON
 app.use(express.json());

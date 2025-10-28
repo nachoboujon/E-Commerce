@@ -1,19 +1,26 @@
-# Dependencias
+# Dependencies
 node_modules/
-package-lock.json
 
-# Variables de entorno
+# Environment variables
 .env
+.env.local
+.env.production
 
-# Archivos de sistema
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-npm-debug.log*
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Archivos temporales
-*.tmp
-*.temp
-
+# Build
+dist/
+build/

@@ -2,11 +2,14 @@
 
 [build]
   # No hay proceso de build para frontend estático
-  command = "echo 'No build needed for static files'"
+  command = "echo 'Frontend estático - Backend en Render.com'"
   publish = "."
   
 [build.environment]
   NODE_VERSION = "18"
+
+# Variables de entorno para el frontend
+# (El backend está en Render.com, no en Netlify)
 
 # Headers para caché y seguridad
 [[headers]]
