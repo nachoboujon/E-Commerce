@@ -50,12 +50,14 @@ const productoSchema = new mongoose.Schema({
     },
     descripcion: {
         type: String,
-        required: [true, 'La descripción es requerida'],
-        trim: true
+        required: false,
+        trim: true,
+        default: ''
     },
     imagen: {
         type: String,
-        required: [true, 'La imagen es requerida']
+        required: false,
+        default: '/IMG/producto-default.png'
     },
     rating: {
         type: Number,
