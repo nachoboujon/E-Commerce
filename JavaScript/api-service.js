@@ -5,10 +5,8 @@
 
 // Configuración de la API
 const API_CONFIG = {
-    // ✅ Backend desplegado en Render.com
-    baseURL: window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000/api'  // Desarrollo local
-        : 'https://phonespot-backend.onrender.com/api',  // Producción
+    // ✅ Backend desplegado en Render.com - SIEMPRE usar Render.com
+    baseURL: 'https://phonespot-backend.onrender.com/api',
     timeout: 10000
 };
 

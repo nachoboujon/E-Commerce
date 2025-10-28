@@ -108,9 +108,8 @@ async function login(identificador, password) {
     
     // 🔐 Intentar autenticar con el backend API para obtener token JWT
     let tokenJWT = null;
-    const backendURL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000/api' 
-        : 'https://phonespot-backend.onrender.com/api';
+    // SIEMPRE usar Render.com porque el backend local casi nunca está corriendo
+    const backendURL = 'https://phonespot-backend.onrender.com/api';
     
     console.log('🔐 Intentando obtener token JWT del backend...');
     console.log('📡 Backend URL:', backendURL);
