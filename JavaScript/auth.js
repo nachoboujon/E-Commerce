@@ -108,8 +108,8 @@ async function login(identificador, password) {
     
     // 🔐 Intentar autenticar con el backend API para obtener token JWT
     let tokenJWT = null;
-    // SIEMPRE usar Render.com porque el backend local casi nunca está corriendo
-    const backendURL = 'https://phonespot-backend.onrender.com/api';
+    // SIEMPRE usar Railway.app porque es mucho más rápido que Render.com
+    const backendURL = 'https://phonespot-backend-production.up.railway.app/api';
     
     console.log('🔐 Intentando obtener token JWT del backend...');
     console.log('📡 Backend URL:', backendURL);

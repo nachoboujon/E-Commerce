@@ -5,8 +5,8 @@
 
 // Configuración de la API
 const API_CONFIG = {
-    // ✅ Backend desplegado en Render.com - SIEMPRE usar Render.com
-    baseURL: 'https://phonespot-backend.onrender.com/api',
+    // ✅ Backend desplegado en Railway.app - Mucho más rápido que Render
+    baseURL: 'https://phonespot-backend-production.up.railway.app/api',
     timeout: 10000
 };
 
