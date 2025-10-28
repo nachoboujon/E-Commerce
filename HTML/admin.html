@@ -636,28 +636,66 @@
         }
 
         // Cargar tabla de productos
-        function cargarTablaProductos() {
-            const productos = Productos.obtenerProductos();
-            const tbody = document.getElementById('tablaProductos');
-            
-            tbody.innerHTML = productos.map(p => `
-                <tr>
-                    <td><code>${p.id}</code></td>
-                    <td>${p.nombre}</td>
-                    <td><span style="text-transform: capitalize;">${p.categoria}</span></td>
-                    <td>USD $${p.precio.toLocaleString()}</td>
-                    <td>${p.stock}</td>
-                    <td>⭐ ${p.rating}</td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="editarProducto('${p.id}')">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                        <button class="btn-action btn-delete" onclick="eliminarProducto('${p.id}')">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+        async function cargarTablaProductos() {
+            try {
+                let productos;
+                
+                // 🌐 Intentar cargar desde backend primero
+                if (window.BACKEND_DISPONIBLE && window.APIService) {
+                    productos = await window.APIService.obtenerProductos();
+                    console.log('✅ Productos cargados desde backend:', productos.length);
+                    // Guardar en localStorage como cache
+                    localStorage.setItem('productosPhoneSpot', JSON.stringify(productos));
+                } else {
+                    // Fallback: usar localStorage
+                    productos = Productos.obtenerProductos();
+                    console.log('⚠️ Productos cargados desde localStorage:', productos.length);
+                }
+                
+                const tbody = document.getElementById('tablaProductos');
+                
+                tbody.innerHTML = productos.map(p => `
+                    <tr>
+                        <td><code>${p.id}</code></td>
+                        <td>${p.nombre}</td>
+                        <td><span style="text-transform: capitalize;">${p.categoria}</span></td>
+                        <td>USD $${p.precio.toLocaleString()}</td>
+                        <td>${p.stock}</td>
+                        <td>⭐ ${p.rating}</td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="editarProducto('${p.id}')">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn-action btn-delete" onclick="eliminarProducto('${p.id}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('❌ Error al cargar productos:', error);
+                // Fallback: usar localStorage
+                const productos = Productos.obtenerProductos();
+                const tbody = document.getElementById('tablaProductos');
+                tbody.innerHTML = productos.map(p => `
+                    <tr>
+                        <td><code>${p.id}</code></td>
+                        <td>${p.nombre}</td>
+                        <td><span style="text-transform: capitalize;">${p.categoria}</span></td>
+                        <td>USD $${p.precio.toLocaleString()}</td>
+                        <td>${p.stock}</td>
+                        <td>⭐ ${p.rating}</td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="editarProducto('${p.id}')">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn-action btn-delete" onclick="eliminarProducto('${p.id}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
         }
 
         // Preview de imagen
@@ -722,7 +760,7 @@
         }
 
         // Agregar producto
-        document.getElementById('formAgregarProducto').addEventListener('submit', function(e) {
+        document.getElementById('formAgregarProducto').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
@@ -751,6 +789,7 @@
             const producto = {
                 nombre: formData.get('nombre'),
                 categoria: formData.get('categoria'),
+                marca: formData.get('marca') || '',
                 precio: parseFloat(formData.get('precio')),
                 precioAnterior: formData.get('precioAnterior') ? parseFloat(formData.get('precioAnterior')) : null,
                 stock: parseInt(formData.get('stock')),
@@ -763,49 +802,75 @@
                 variantes: variantes, // 💰 Variantes de precio (memoria + batería)
                 esNuevo: formData.get('esNuevo') === 'on',
                 enOferta: formData.get('enOferta') === 'on',
-                esAmericano: formData.get('esAmericano') === 'on' // 🇺🇸 Americano
+                esAmericano: formData.get('esAmericano') === 'on', // 🇺🇸 Americano
+                activo: true
             };
             
-            // Verificar si estamos editando o agregando
-            if (productoEnEdicion) {
-                // MODO EDICIÓN: Actualizar producto existente
-                producto.id = productoEnEdicion; // Mantener el mismo ID
-                
-                if (Productos.actualizarProducto(productoEnEdicion, producto)) {
+            try {
+                // Verificar si estamos editando o agregando
+                if (productoEnEdicion) {
+                    // MODO EDICIÓN: Actualizar producto existente
+                    producto.id = productoEnEdicion; // Mantener el mismo ID
+                    
+                    // 🌐 Enviar al backend API
+                    if (window.BACKEND_DISPONIBLE && window.APIService) {
+                        await window.APIService.actualizarProducto(productoEnEdicion, producto);
+                    }
+                    // También actualizar localStorage como cache
+                    Productos.actualizarProducto(productoEnEdicion, producto);
+                    
                     alert('✅ Producto actualizado exitosamente!');
                     cancelarEdicion();
                     
                     // Cambiar a la pestaña de gestionar para ver el resultado
                     cambiarTab('gestionar');
                     
-                    setTimeout(() => {
-                        cargarTablaProductos();
+                    setTimeout(async () => {
+                        await cargarTablaProductos();
                         actualizarEstadisticas();
                     }, 100);
                 } else {
-                    alert('❌ Error al actualizar el producto');
+                    // MODO AGREGAR: Crear nuevo producto
+                    
+                    // 🌐 Enviar al backend API
+                    if (window.BACKEND_DISPONIBLE && window.APIService) {
+                        const productoCreado = await window.APIService.crearProducto(producto);
+                        console.log('✅ Producto creado en backend:', productoCreado);
+                    }
+                    // También guardar en localStorage como cache
+                    Productos.agregarProducto(producto);
+                    
+                    alert('✅ Producto agregado exitosamente!');
+                    this.reset();
+                    document.getElementById('previewContainer').innerHTML = '<i class="fas fa-image" style="font-size: 40px; color: var(--crl-light-gray);"></i>';
+                    document.getElementById('imagenBase64').value = '';
+                    await cargarTablaProductos();
+                    actualizarEstadisticas();
                 }
-            } else {
-                // MODO AGREGAR: Crear nuevo producto
-            if (Productos.agregarProducto(producto)) {
-                alert('✅ Producto agregado exitosamente!');
-                this.reset();
-                document.getElementById('previewContainer').innerHTML = '<i class="fas fa-image" style="font-size: 40px; color: var(--crl-light-gray);"></i>';
-                document.getElementById('imagenBase64').value = '';
-                actualizarEstadisticas();
-            } else {
-                alert('❌ Error al agregar el producto');
-                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                alert('❌ Error al guardar el producto: ' + error.message);
             }
         });
 
         // Eliminar producto
-        function eliminarProducto(id) {
+        async function eliminarProducto(id) {
             if (confirm('¿Estás seguro de eliminar este producto?')) {
-                if (Productos.eliminarProducto(id)) {
+                try {
+                    // 🌐 Eliminar del backend API
+                    if (window.BACKEND_DISPONIBLE && window.APIService) {
+                        await window.APIService.eliminarProducto(id);
+                        console.log('✅ Producto eliminado del backend');
+                    }
+                    // También eliminar de localStorage como cache
+                    Productos.eliminarProducto(id);
+                    
                     alert('✅ Producto eliminado exitosamente');
-                    cargarTablaProductos();
+                    await cargarTablaProductos();
                     actualizarEstadisticas();
+                } catch (error) {
+                    console.error('❌ Error:', error);
+                    alert('❌ Error al eliminar el producto: ' + error.message);
                 }
             }
         }
