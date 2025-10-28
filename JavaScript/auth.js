@@ -123,7 +123,7 @@ async function login(identificador, password) {
         const response = await fetch(loginURL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: usuario.email, password: password })
+            body: JSON.stringify({ identificador: usuario.email, password: password })
         });
         
         console.log('📨 Respuesta del backend:', response.status, response.statusText);
