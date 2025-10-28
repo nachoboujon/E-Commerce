@@ -108,8 +108,8 @@
             aside.classList.toggle('active');
             overlay.classList.toggle('active');
         }
-        document.querySelectorAll('.container aside nav a').forEach(link => {
-            link.addEventListener('click', () => {
+        document.querySelectorAll('.container aside nav a, .container aside nav button').forEach(element => {
+            element.addEventListener('click', () => {
                 if (window.innerWidth <= 768) toggleMobileMenu();
             });
         });

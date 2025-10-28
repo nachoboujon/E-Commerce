@@ -115,9 +115,9 @@
             overlay.classList.toggle('active');
         }
         
-        // Cerrar menú al hacer clic en un enlace
-        document.querySelectorAll('.container aside nav a').forEach(link => {
-            link.addEventListener('click', () => {
+        // Cerrar menú al hacer clic en un enlace o botón
+        document.querySelectorAll('.container aside nav a, .container aside nav button').forEach(element => {
+            element.addEventListener('click', () => {
                 if (window.innerWidth <= 768) {
                     toggleMobileMenu();
                 }
