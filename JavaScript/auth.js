@@ -130,12 +130,22 @@ async function login(identificador, password) {
         
         if (response.ok) {
             const data = await response.json();
+            console.log('📦 Data completa del backend:', data);
+            console.log('🔍 data.token:', data.token);
+            console.log('🔍 data.success:', data.success);
+            
             tokenJWT = data.token;
             console.log('✅ Token JWT obtenido del backend:', tokenJWT ? 'Sí ✅' : 'No ❌');
             console.log('🔑 Token completo:', tokenJWT);
+            
+            if (!tokenJWT) {
+                console.error('⚠️ ADVERTENCIA: El backend respondió OK pero NO devolvió token');
+                console.error('⚠️ Estructura de respuesta:', JSON.stringify(data, null, 2));
+            }
         } else {
             const errorData = await response.json();
-            console.error('❌ Error del backend:', errorData);
+            console.error('❌ Error del backend (status ' + response.status + '):', errorData);
+            console.error('❌ Mensaje:', errorData.message);
         }
     } catch (error) {
         console.error('❌ Error al conectar con backend:', error.message);
@@ -152,7 +162,17 @@ async function login(identificador, password) {
         loginTime: new Date().toISOString()
     };
     
+    console.log('\n💾 Guardando sesión en localStorage...');
+    console.log('📋 Sesión a guardar:', sesion);
+    console.log('🔑 Token en sesión:', sesion.token ? 'Presente ✅' : 'NULL ❌');
+    
     localStorage.setItem('sesionPhoneSpot', JSON.stringify(sesion));
+    
+    // Verificar que se guardó correctamente
+    const sesionGuardada = JSON.parse(localStorage.getItem('sesionPhoneSpot'));
+    console.log('✅ Sesión guardada en localStorage');
+    console.log('🔍 Token guardado:', sesionGuardada.token ? 'Presente ✅' : 'NULL ❌');
+    
     return { success: true, sesion: sesion };
 }
 
