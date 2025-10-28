@@ -72,9 +72,9 @@ function buscarUsuario(identificador) {
  * Iniciar sesión
  * @param {string} identificador - Nombre de usuario o email
  * @param {string} password - Contraseña
- * @returns {Object} - Resultado del login con success, sesion o message
+ * @returns {Promise<Object>} - Resultado del login con success, sesion o message
  */
-function login(identificador, password) {
+async function login(identificador, password) {
     const usuario = buscarUsuario(identificador);
     
     if (!usuario) {
@@ -95,12 +95,34 @@ function login(identificador, password) {
         };
     }
     
-    // Guardar sesión en localStorage
+    // 🔐 Intentar autenticar con el backend API para obtener token JWT
+    let tokenJWT = null;
+    if (window.BACKEND_DISPONIBLE) {
+        try {
+            // Llamar al endpoint de login del backend
+            const response = await fetch(`${window.APIService ? window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : 'https://phonespot-backend.onrender.com/api' : 'https://phonespot-backend.onrender.com/api'}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: usuario.email, password: password })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                tokenJWT = data.token;
+                console.log('✅ Token JWT obtenido del backend');
+            }
+        } catch (error) {
+            console.warn('⚠️ No se pudo obtener token del backend:', error.message);
+        }
+    }
+    
+    // Guardar sesión en localStorage con token
     const sesion = {
         username: usuario.username,
         rol: usuario.rol,
         nombre: usuario.nombre,
         email: usuario.email,
+        token: tokenJWT, // 🔑 Token JWT del backend
         loginTime: new Date().toISOString()
     };
     
