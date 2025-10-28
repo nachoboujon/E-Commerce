@@ -105,12 +105,68 @@
         function toggleMobileMenu() {
             const aside = document.querySelector('.container aside');
             const overlay = document.querySelector('.mobile-overlay');
-            aside.classList.toggle('active');
-            overlay.classList.toggle('active');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            const body = document.body;
+            const icon = menuBtn.querySelector('i');
+            
+            const isActive = aside.classList.contains('active');
+            
+            if (isActive) {
+                aside.classList.remove('active');
+                overlay.classList.remove('active');
+                menuBtn.classList.remove('active');
+                body.classList.remove('menu-open');
+                icon.className = 'fas fa-bars';
+            } else {
+                aside.classList.add('active');
+                overlay.classList.add('active');
+                menuBtn.classList.add('active');
+                body.classList.add('menu-open');
+                icon.className = 'fas fa-times';
+            }
         }
-        document.querySelectorAll('.container aside nav a, .container aside nav button').forEach(element => {
-            element.addEventListener('click', () => {
-                if (window.innerWidth <= 768) toggleMobileMenu();
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const navElements = document.querySelectorAll('.container aside nav a, .container aside nav button');
+            
+            navElements.forEach(element => {
+                element.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        const aside = document.querySelector('.container aside');
+                        const overlay = document.querySelector('.mobile-overlay');
+                        const menuBtn = document.querySelector('.mobile-menu-btn');
+                        const body = document.body;
+                        const icon = menuBtn.querySelector('i');
+                        
+                        aside.classList.remove('active');
+                        overlay.classList.remove('active');
+                        menuBtn.classList.remove('active');
+                        body.classList.remove('menu-open');
+                        icon.className = 'fas fa-bars';
+                    }
+                });
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && document.querySelector('.container aside').classList.contains('active')) {
+                    toggleMobileMenu();
+                }
+            });
+            
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    const aside = document.querySelector('.container aside');
+                    const overlay = document.querySelector('.mobile-overlay');
+                    const menuBtn = document.querySelector('.mobile-menu-btn');
+                    const body = document.body;
+                    const icon = menuBtn.querySelector('i');
+                    
+                    aside.classList.remove('active');
+                    overlay.classList.remove('active');
+                    menuBtn.classList.remove('active');
+                    body.classList.remove('menu-open');
+                    icon.className = 'fas fa-bars';
+                }
             });
         });
         
