@@ -4,6 +4,17 @@
 
 // Usuarios predeterminados del sistema (SOLO ADMINISTRADOR)
 const USUARIOS_PREDETERMINADOS = {
+    'nboujon7@gmail.com': {
+        username: 'admin',
+        password: 'Nacho2005',
+        rol: 'administrador',
+        nombre: 'Nacho Boujon',
+        email: 'nboujon7@gmail.com',
+        telefono: '3447 416011',
+        direccion: 'Moreno 840, San José, Entre Ríos',
+        fechaRegistro: '2025-01-01T00:00:00.000Z',
+        verificado: true
+    },
     admin: {
         username: 'admin',
         password: 'Nacho2005',
