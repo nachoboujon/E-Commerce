@@ -2,14 +2,14 @@
 
 [build]
   # No hay proceso de build para frontend estático
-  command = "echo 'PhoneSpot E-Commerce - Frontend conectado a Render.com'"
+  command = "echo 'PhoneSpot E-Commerce - Frontend conectado a Railway.app'"
   publish = "."
   
 [build.environment]
   NODE_VERSION = "18"
 
 # Variables de entorno para el frontend
-# (El backend está en Render.com: https://phonespot-backend.onrender.com)
+# (El backend está en Railway.app: https://phonespot-backend-production.up.railway.app)
 
 # Context-specific deploy settings
 [context.production]

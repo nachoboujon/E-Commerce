@@ -22,7 +22,8 @@ const app = express();
 
 // CORS - Permitir peticiones desde el frontend
 const allowedOrigins = [
-    'https://phonespotsj1.netlify.app',
+    'https://phonespott.netlify.app',
+    'https://phonespotsj1.netlify.app', // URL anterior por compatibilidad
     'http://localhost:5500',
     'http://127.0.0.1:5500',
     'http://localhost:3000',
