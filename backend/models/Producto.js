@@ -33,6 +33,38 @@ const productoSchema = new mongoose.Schema({
         enum: ['Nuevo', 'Americano'],
         default: 'Nuevo'
     },
+    // Campos adicionales para variantes
+    colores: {
+        type: [String],
+        default: []
+    },
+    memorias: {
+        type: [String],
+        default: []
+    },
+    variantes: [{
+        color: {
+            type: String,
+            trim: true
+        },
+        memoria: {
+            type: String,
+            trim: true
+        },
+        bateria: {
+            type: String,
+            trim: true
+        },
+        precio: {
+            type: Number,
+            min: 0
+        },
+        stock: {
+            type: Number,
+            min: 0,
+            default: 0
+        }
+    }],
     precio: {
         type: Number,
         required: [true, 'El precio es requerido'],
