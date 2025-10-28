@@ -74,9 +74,32 @@ console.log('   FRONTEND_URL:', process.env.FRONTEND_URL || 'no configurado');
 console.log('   Intentando conectar a:', MONGODB_URI.includes('mongodb+srv') ? 'MongoDB Atlas ☁️' : 'MongoDB Local 💻');
 
 mongoose.connect(MONGODB_URI)
-    .then(() => {
+    .then(async () => {
         console.log('✅ Conectado a MongoDB correctamente');
         console.log(`📊 Base de datos: ${mongoose.connection.name}`);
+        console.log(`🔗 Host: ${mongoose.connection.host}`);
+        
+        // Listar colecciones y usuarios
+        try {
+            const collections = await mongoose.connection.db.listCollections().toArray();
+            console.log('📋 Colecciones:', collections.map(c => c.name).join(', '));
+            
+            const Usuario = require('./backend/models/Usuario');
+            const totalUsuarios = await Usuario.countDocuments();
+            console.log(`👥 Total usuarios: ${totalUsuarios}`);
+            
+            if (totalUsuarios > 0) {
+                const usuarios = await Usuario.find({}, 'username email rol').limit(3);
+                console.log('📋 Usuarios en BD:');
+                usuarios.forEach((u, i) => {
+                    console.log(`   ${i + 1}. ${u.username} / ${u.email} / ${u.rol}`);
+                });
+            } else {
+                console.log('⚠️ NO HAY USUARIOS EN LA BASE DE DATOS - CREAR ADMIN');
+            }
+        } catch (err) {
+            console.error('Error listando usuarios:', err.message);
+        }
     })
     .catch((error) => {
         console.error('❌ Error al conectar a MongoDB:', error);
