@@ -38,6 +38,9 @@
                     <img src="IMG/Phonestpot.jpg" alt="PhoneSpot Logo" class="logo-image">
                     <h1>PhoneSpot</h1>
                 </div>
+                <button class="close-menu-btn" onclick="toggleMobileMenu()" title="Cerrar menú">
+                    <i class="fas fa-times"></i>
+                </button>
             </header>
             
             <!-- Menú de navegación -->
@@ -120,9 +123,7 @@
         function toggleMobileMenu() {
             const aside = document.querySelector('.container aside');
             const overlay = document.querySelector('.mobile-overlay');
-            const menuBtn = document.querySelector('.mobile-menu-btn');
             const body = document.body;
-            const icon = menuBtn.querySelector('i');
             
             const isActive = aside.classList.contains('active');
             
@@ -130,16 +131,12 @@
                 // Cerrar menú
                 aside.classList.remove('active');
                 overlay.classList.remove('active');
-                menuBtn.classList.remove('active');
                 body.classList.remove('menu-open');
-                icon.className = 'fas fa-bars';
             } else {
                 // Abrir menú
                 aside.classList.add('active');
                 overlay.classList.add('active');
-                menuBtn.classList.add('active');
                 body.classList.add('menu-open');
-                icon.className = 'fas fa-times';
             }
         }
         
@@ -152,15 +149,11 @@
                     if (window.innerWidth <= 768) {
                         const aside = document.querySelector('.container aside');
                         const overlay = document.querySelector('.mobile-overlay');
-                        const menuBtn = document.querySelector('.mobile-menu-btn');
                         const body = document.body;
-                        const icon = menuBtn.querySelector('i');
                         
                         aside.classList.remove('active');
                         overlay.classList.remove('active');
-                        menuBtn.classList.remove('active');
                         body.classList.remove('menu-open');
-                        icon.className = 'fas fa-bars';
                     }
                 });
             });
@@ -180,15 +173,11 @@
                 if (window.innerWidth > 768) {
                     const aside = document.querySelector('.container aside');
                     const overlay = document.querySelector('.mobile-overlay');
-                    const menuBtn = document.querySelector('.mobile-menu-btn');
                     const body = document.body;
-                    const icon = menuBtn.querySelector('i');
                     
                     aside.classList.remove('active');
                     overlay.classList.remove('active');
-                    menuBtn.classList.remove('active');
                     body.classList.remove('menu-open');
-                    icon.className = 'fas fa-bars';
                 }
             });
         });
