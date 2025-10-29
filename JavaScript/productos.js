@@ -27,24 +27,34 @@ function obtenerProductos() {
  * @returns {Promise<Array>}
  */
 async function cargarProductosDesdeBackend() {
+    // ✅ SIEMPRE intentar cargar desde MongoDB primero
     if (window.BACKEND_DISPONIBLE && window.APIService) {
         try {
-            console.log('🔄 Cargando productos desde MongoDB...');
+            console.log('🔄 Cargando productos desde MongoDB (prioridad alta)...');
             const productos = await window.APIService.obtenerProductos();
             
             if (productos && productos.length > 0) {
                 // Guardar en localStorage como cache
                 localStorage.setItem(DB_KEY, JSON.stringify(productos));
-                console.log('✅ Productos cargados desde backend:', productos.length);
+                console.log('✅ Productos cargados desde MongoDB:', productos.length);
+                console.log('💾 Cache actualizado en localStorage');
                 return productos;
+            } else {
+                console.warn('⚠️ MongoDB retornó 0 productos, usando localStorage como fallback');
             }
         } catch (error) {
-            console.warn('⚠️ Error al cargar desde backend, usando localStorage:', error);
+            console.error('❌ Error al cargar desde MongoDB:', error.message);
+            console.log('📦 Usando localStorage como fallback...');
         }
+    } else {
+        console.warn('⚠️ Backend no disponible o APIService no cargado');
+        console.log('📦 Usando productos locales...');
     }
     
     // Fallback: usar productos locales
-    return obtenerProductos();
+    const productosLocales = obtenerProductos();
+    console.log(`📦 Productos cargados desde localStorage/iniciales: ${productosLocales.length}`);
+    return productosLocales;
 }
 
 /**
@@ -739,6 +749,7 @@ function inicializarCambioPrecio() {
     
     productosConVariantes.forEach(productoId => {
         console.log(`⚙️ Inicializando: ${productoId}`);
+        // Solo actualizar precio inicial (NO filtrar selectores automáticamente)
         actualizarPrecioProducto(productoId);
     });
     
@@ -748,12 +759,114 @@ function inicializarCambioPrecio() {
 /**
  * Actualizar selectores dinámicamente según selección actual
  * @param {string} productoId - ID del producto
- * @param {string} selectorCambiado - Qué selector cambió ('color', 'memoria', 'bateria')
+ * @param {string} selectorCambiado - Qué selector cambió ('color' o 'memoria')
  */
-function actualizarSelectoresDinamicos(productoId, selectorCambiado) {
-    // POR AHORA, NO HACER NADA - Solo dejar que se actualice el precio
-    // Los selectores ya tienen todas las opciones correctas desde el inicio
-    console.log(`Selectores dinámicos: No se filtran (todas las opciones disponibles)`);
+function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
+    console.log(`🔄 Actualizando selectores dinámicos para ${productoId} (cambió: ${selectorCambiado})`);
+    
+    const producto = obtenerProductoPorId(productoId);
+    if (!producto || !producto.variantes || producto.variantes.length === 0) {
+        console.log(`ℹ️ Producto sin variantes configuradas, no se filtran selectores`);
+        return;
+    }
+    
+    const colorSelector = document.querySelector(`.color-selector[data-product-id="${productoId}"]`);
+    const memoriaSelector = document.querySelector(`.memory-selector[data-product-id="${productoId}"]`);
+    
+    if (!colorSelector && !memoriaSelector) {
+        console.log(`⚠️ No se encontraron selectores para el producto ${productoId}`);
+        return;
+    }
+    
+    // ✅ VALIDACIÓN: Verificar si las variantes son "completas"
+    // Si hay arrays base (colores y memorias), verificar que las variantes cubran al menos algunas combinaciones
+    const tieneColoresBase = producto.colores && producto.colores.length > 0;
+    const tieneMemoriasBase = producto.memorias && producto.memorias.length > 0;
+    
+    // Si hay arrays base pero las variantes no tienen color o memoria, NO filtrar
+    if (tieneColoresBase && tieneMemoriasBase) {
+        const variantesConColor = producto.variantes.filter(v => v.color && v.color.trim() !== '').length;
+        const variantesConMemoria = producto.variantes.filter(v => v.memoria && v.memoria.trim() !== '').length;
+        
+        if (variantesConColor === 0 || variantesConMemoria === 0) {
+            console.log(`ℹ️ Variantes incompletas (sin color o memoria), no se filtran selectores`);
+            return;
+        }
+    }
+    
+    // Si cambió el color, actualizar las opciones de memoria disponibles
+    if (selectorCambiado === 'color' && colorSelector && memoriaSelector) {
+        const colorSeleccionado = colorSelector.value;
+        console.log(`🎨 Color seleccionado: ${colorSeleccionado}`);
+        
+        // Filtrar variantes que coincidan con el color seleccionado
+        const variantesDelColor = producto.variantes.filter(v => v.color === colorSeleccionado);
+        
+        // Obtener memorias únicas disponibles para este color
+        const memoriasDisponibles = [...new Set(variantesDelColor.map(v => v.memoria).filter(m => m))];
+        
+        console.log(`📋 Memorias disponibles para ${colorSeleccionado}:`, memoriasDisponibles);
+        
+        // ✅ VALIDACIÓN: Si no hay memorias filtradas, NO actualizar (mantener opciones originales)
+        if (memoriasDisponibles.length === 0) {
+            console.log(`⚠️ No se encontraron memorias para el color "${colorSeleccionado}", manteniendo opciones originales`);
+            return;
+        }
+        
+        // Guardar la memoria actualmente seleccionada
+        const memoriaActual = memoriaSelector.value;
+        
+        // Actualizar opciones del selector de memoria
+        memoriaSelector.innerHTML = memoriasDisponibles.map(memoria => 
+            `<option value="${memoria}">${memoria}</option>`
+        ).join('');
+        
+        // Restaurar la selección si sigue disponible, sino seleccionar la primera
+        if (memoriasDisponibles.includes(memoriaActual)) {
+            memoriaSelector.value = memoriaActual;
+        } else {
+            memoriaSelector.value = memoriasDisponibles[0];
+            console.log(`⚠️ Memoria "${memoriaActual}" no disponible para color "${colorSeleccionado}", cambiando a "${memoriasDisponibles[0]}"`);
+        }
+    }
+    
+    // Si cambió la memoria, actualizar las opciones de color disponibles
+    if (selectorCambiado === 'memoria' && colorSelector && memoriaSelector) {
+        const memoriaSeleccionada = memoriaSelector.value;
+        console.log(`💾 Memoria seleccionada: ${memoriaSeleccionada}`);
+        
+        // Filtrar variantes que coincidan con la memoria seleccionada
+        const variantesDeLaMemoria = producto.variantes.filter(v => v.memoria === memoriaSeleccionada);
+        
+        // Obtener colores únicos disponibles para esta memoria
+        const coloresDisponibles = [...new Set(variantesDeLaMemoria.map(v => v.color).filter(c => c))];
+        
+        console.log(`📋 Colores disponibles para ${memoriaSeleccionada}:`, coloresDisponibles);
+        
+        // ✅ VALIDACIÓN: Si no hay colores filtrados, NO actualizar (mantener opciones originales)
+        if (coloresDisponibles.length === 0) {
+            console.log(`⚠️ No se encontraron colores para la memoria "${memoriaSeleccionada}", manteniendo opciones originales`);
+            return;
+        }
+        
+        // Guardar el color actualmente seleccionado
+        const colorActual = colorSelector.value;
+        
+        // Actualizar opciones del selector de color
+        colorSelector.innerHTML = coloresDisponibles.map(color => 
+            `<option value="${color}">${color}</option>`
+        ).join('');
+        
+        // Restaurar la selección si sigue disponible, sino seleccionar el primero
+        if (coloresDisponibles.includes(colorActual)) {
+            colorSelector.value = colorActual;
+        } else {
+            colorSelector.value = coloresDisponibles[0];
+            console.log(`⚠️ Color "${colorActual}" no disponible para memoria "${memoriaSeleccionada}", cambiando a "${coloresDisponibles[0]}"`);
+        }
+    }
+    
+    console.log(`✅ Selectores actualizados`);
 }
 
 /**
@@ -794,10 +907,29 @@ function actualizarPrecioProducto(productoId) {
         
         // SOLO buscar variante si hay selección de color O memoria
         if (colorSeleccionado || memoriaSeleccionada) {
-            // Buscar coincidencia EXACTA
+            // Buscar coincidencia EXACTA (con trim para eliminar espacios)
             varianteEncontrada = producto.variantes.find(v => {
-                const colorCoincide = !colorSeleccionado || v.color === colorSeleccionado;
-                const memoriaCoincide = !memoriaSeleccionada || v.memoria === memoriaSeleccionada;
+                const colorVariante = v.color ? v.color.trim() : '';
+                const memoriaVariante = v.memoria ? v.memoria.trim() : '';
+                const colorBuscado = colorSeleccionado ? colorSeleccionado.trim() : '';
+                const memoriaBuscada = memoriaSeleccionada ? memoriaSeleccionada.trim() : '';
+                
+                const colorCoincide = !colorBuscado || colorVariante === colorBuscado;
+                const memoriaCoincide = !memoriaBuscada || memoriaVariante === memoriaBuscada;
+                
+                // DEBUG: Log de comparación
+                if (colorBuscado || memoriaBuscada) {
+                    console.log(`  🔎 Comparando variante:`, {
+                        varianteColor: colorVariante,
+                        varianteMemoria: memoriaVariante,
+                        buscadoColor: colorBuscado,
+                        buscadoMemoria: memoriaBuscada,
+                        colorCoincide,
+                        memoriaCoincide,
+                        resultado: colorCoincide && memoriaCoincide
+                    });
+                }
+                
                 return colorCoincide && memoriaCoincide;
             });
         }
@@ -997,14 +1129,14 @@ function crearTarjetaProducto(producto) {
     console.log(`  - Colores: [${coloresDisponibles.join(', ')}]`);
     console.log(`  - Memorias: [${memoriasDisponibles.join(', ')}]`);
     
-    // Generar selector de color con onchange y ontouchend para móvil
+    // Generar selector de color con onchange que filtra memorias y actualiza precio
     const selectorColor = coloresDisponibles.length > 0 ? `
         <div class="product-variant">
             <label><i class="fas fa-palette"></i> Color:</label>
             <select class="variant-selector color-selector" 
                     data-product-id="${producto.id}" 
-                    onchange="window.Productos.actualizarPrecioProducto('${producto.id}')"
-                    ontouchend="setTimeout(() => window.Productos.actualizarPrecioProducto('${producto.id}'), 100)">
+                    onchange="window.Productos.actualizarSelectoresDinamicos('${producto.id}', 'color'); window.Productos.actualizarPrecioProducto('${producto.id}')"
+                    ontouchend="setTimeout(() => { window.Productos.actualizarSelectoresDinamicos('${producto.id}', 'color'); window.Productos.actualizarPrecioProducto('${producto.id}'); }, 100)">
                 ${coloresDisponibles.map((color, index) => 
                     `<option value="${color}" ${index === 0 ? 'selected' : ''}>${color}</option>`
                 ).join('')}
@@ -1012,14 +1144,14 @@ function crearTarjetaProducto(producto) {
         </div>
     ` : '';
     
-    // Generar selector de memoria con onchange y ontouchend para móvil
+    // Generar selector de memoria con onchange que filtra colores y actualiza precio
     const selectorMemoria = memoriasDisponibles.length > 0 ? `
         <div class="product-variant">
             <label><i class="fas fa-memory"></i> Memoria:</label>
             <select class="variant-selector memory-selector" 
                     data-product-id="${producto.id}" 
-                    onchange="window.Productos.actualizarPrecioProducto('${producto.id}')"
-                    ontouchend="setTimeout(() => window.Productos.actualizarPrecioProducto('${producto.id}'), 100)">
+                    onchange="window.Productos.actualizarSelectoresDinamicos('${producto.id}', 'memoria'); window.Productos.actualizarPrecioProducto('${producto.id}')"
+                    ontouchend="setTimeout(() => { window.Productos.actualizarSelectoresDinamicos('${producto.id}', 'memoria'); window.Productos.actualizarPrecioProducto('${producto.id}'); }, 100)">
                 ${memoriasDisponibles.map((memoria, index) => 
                     `<option value="${memoria}" ${index === 0 ? 'selected' : ''}>${memoria}</option>`
                 ).join('')}
@@ -1127,17 +1259,17 @@ function generarEstrellas(rating) {
 // INICIALIZACIÓN
 // ============================================================
 
-// Sistema de versiones para forzar actualización de imágenes
-const VERSION_IMAGENES = '5.1';
-const VERSION_KEY = 'versionImagenesPhoneSpot';
+// Sistema de versiones para forzar actualización de productos
+const VERSION_PRODUCTOS = '6.0'; // ⬆️ Incrementada para forzar actualización de variantes
+const VERSION_KEY = 'versionProductosPhoneSpot';
 
 // Verificar si necesitamos actualizar por nueva versión
 const versionActual = localStorage.getItem(VERSION_KEY);
-if (versionActual !== VERSION_IMAGENES) {
-    console.log('🔄 Detectada nueva versión de imágenes. Actualizando productos...');
+if (versionActual !== VERSION_PRODUCTOS) {
+    console.log('🔄 Detectada nueva versión de productos. Limpiando cache...');
     localStorage.removeItem(DB_KEY);
-    localStorage.setItem(VERSION_KEY, VERSION_IMAGENES);
-    console.log('✅ Productos actualizados a versión:', VERSION_IMAGENES);
+    localStorage.setItem(VERSION_KEY, VERSION_PRODUCTOS);
+    console.log('✅ Cache limpiado. Versión actualizada a:', VERSION_PRODUCTOS);
 }
 
 // Asegurar que existan productos iniciales
@@ -1165,7 +1297,8 @@ window.Productos = {
     procesarCompra,
     obtenerMovimientosStock,
     obtenerHistorialCompras,
-    actualizarPrecioProducto  // ✅ EXPORTAR para uso desde HTML inline
+    actualizarPrecioProducto,  // ✅ EXPORTAR para uso desde HTML inline
+    actualizarSelectoresDinamicos  // ✅ EXPORTAR para filtrado dinámico
 };
 
 console.log('📦 Sistema de gestión de productos cargado');
