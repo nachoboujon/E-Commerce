@@ -734,10 +734,10 @@ function renderizarProductos(productos, contenedorId = 'ContentProducts') {
 
 /**
  * Inicializar event listeners para cambio de precio dinámico
- * NOTA: Los onchange ahora están INLINE en el HTML, esta función solo inicializa precios
+ * NOTA: Los onchange ahora están INLINE en el HTML, esta función inicializa precios y filtros
  */
 function inicializarCambioPrecio() {
-    console.log('🎯 INICIALIZANDO PRECIOS DE VARIANTES');
+    console.log('🎯 INICIALIZANDO PRECIOS Y FILTROS DE VARIANTES');
     
     // Solo inicializar precios de productos con variantes
     const productosConVariantes = new Set();
@@ -749,11 +749,27 @@ function inicializarCambioPrecio() {
     
     productosConVariantes.forEach(productoId => {
         console.log(`⚙️ Inicializando: ${productoId}`);
-        // Solo actualizar precio inicial (NO filtrar selectores automáticamente)
+        
+        // ✅ IMPORTANTE: Aplicar filtrado inicial basado en el color por defecto
+        const producto = obtenerProductoPorId(productoId);
+        if (producto && producto.variantes && producto.variantes.length > 0) {
+            // Verificar si tiene variantes completas (con color Y memoria)
+            const variantesCompletas = producto.variantes.filter(v => 
+                v.color && v.color.trim() !== '' && 
+                v.memoria && v.memoria.trim() !== ''
+            );
+            
+            if (variantesCompletas.length > 0) {
+                console.log(`🔄 Aplicando filtrado inicial para ${productoId}`);
+                actualizarSelectoresDinamicos(productoId, 'color');
+            }
+        }
+        
+        // Actualizar precio inicial
         actualizarPrecioProducto(productoId);
     });
     
-    console.log('✅ PRECIOS INICIALES LISTOS');
+    console.log('✅ PRECIOS Y FILTROS INICIALES LISTOS');
 }
 
 /**
@@ -778,20 +794,25 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
         return;
     }
     
-    // ✅ VALIDACIÓN: Verificar si las variantes son "completas"
-    // Si hay arrays base (colores y memorias), verificar que las variantes cubran al menos algunas combinaciones
-    const tieneColoresBase = producto.colores && producto.colores.length > 0;
-    const tieneMemoriasBase = producto.memorias && producto.memorias.length > 0;
+    // ✅ VALIDACIÓN: Solo filtrar si las variantes tienen TANTO color COMO memoria
+    // Verificar que al menos una variante tenga ambos campos completos
+    const variantesCompletas = producto.variantes.filter(v => 
+        v.color && v.color.trim() !== '' && 
+        v.memoria && v.memoria.trim() !== ''
+    );
     
-    // Si hay arrays base pero las variantes no tienen color o memoria, NO filtrar
-    if (tieneColoresBase && tieneMemoriasBase) {
-        const variantesConColor = producto.variantes.filter(v => v.color && v.color.trim() !== '').length;
-        const variantesConMemoria = producto.variantes.filter(v => v.memoria && v.memoria.trim() !== '').length;
-        
-        if (variantesConColor === 0 || variantesConMemoria === 0) {
-            console.log(`ℹ️ Variantes incompletas (sin color o memoria), no se filtran selectores`);
-            return;
-        }
+    if (variantesCompletas.length === 0) {
+        console.log(`ℹ️ No hay variantes con color Y memoria definidos, no se filtran selectores`);
+        return;
+    }
+    
+    // ✅ Si llegamos aquí, tenemos variantes válidas para filtrar
+    console.log(`✅ ${variantesCompletas.length} variantes completas encontradas, aplicando filtrado dinámico`);
+    
+    // Verificar que tenemos ambos selectores
+    if (!colorSelector || !memoriaSelector) {
+        console.log(`⚠️ Falta algún selector (color o memoria) para aplicar filtrado`);
+        return;
     }
     
     // Si cambió el color, actualizar las opciones de memoria disponibles
@@ -1260,7 +1281,7 @@ function generarEstrellas(rating) {
 // ============================================================
 
 // Sistema de versiones para forzar actualización de productos
-const VERSION_PRODUCTOS = '6.0'; // ⬆️ Incrementada para forzar actualización de variantes
+const VERSION_PRODUCTOS = '6.1'; // ⬆️ Incrementada: filtrado dinámico inicial + validación mejorada
 const VERSION_KEY = 'versionProductosPhoneSpot';
 
 // Verificar si necesitamos actualizar por nueva versión
