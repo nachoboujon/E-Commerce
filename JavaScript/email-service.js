@@ -36,11 +36,23 @@ function inicializarEmailJS() {
  * @returns {Promise}
  */
 async function enviarEmailAdmin(datosCompra) {
-    const { productos, total, cliente, fecha, numeroCompra } = datosCompra;
+    const { productos, total, cliente, fecha, numeroCompra, metodoEnvio, costoEnvio, direccionEnvio } = datosCompra;
     
-    const productosHTML = productos.map(p => 
-        `${p.nombre} - Cantidad: ${p.cantidad} - Precio: USD $${p.precio.toLocaleString()}`
-    ).join('\n');
+    const productosHTML = productos.map(p => {
+        let detalles = `${p.nombre}`;
+        if (p.color) detalles += ` - Color: ${p.color}`;
+        if (p.memoria) detalles += ` - Memoria: ${p.memoria}`;
+        detalles += ` - Cantidad: ${p.cantidad} - Precio: USD $${p.precio.toLocaleString()}`;
+        return detalles;
+    }).join('\n');
+    
+    // Formatear información de envío
+    let textoEnvio = '';
+    if (metodoEnvio === 'retiro') {
+        textoEnvio = '🏪 Retiro en tienda - GRATIS\n📍 Moreno 840, CP 3283, San José, Entre Ríos';
+    } else {
+        textoEnvio = `🚚 Envío a domicilio - ARS $${(costoEnvio || 0).toLocaleString()}\n📍 ${direccionEnvio || 'No especificada'}`;
+    }
     
     const templateParams = {
         to_email: 'nboujon7@gmail.com', // Email del administrador
@@ -51,6 +63,7 @@ async function enviarEmailAdmin(datosCompra) {
         fecha_compra: new Date(fecha).toLocaleString('es-AR'),
         productos: productosHTML,
         total: `USD $${total.toLocaleString()}`,
+        envio_info: textoEnvio,
         mensaje: `🔔 NUEVA COMPRA - PEDIDO #${numeroCompra}\n\n👤 CLIENTE: ${cliente.nombre}\n📧 Email: ${cliente.email}\n\nPor favor, preparar el pedido lo antes posible.`
     };
     
@@ -81,16 +94,32 @@ async function enviarEmailAdmin(datosCompra) {
  * @returns {Promise}
  */
 async function enviarEmailCliente(datosCompra) {
-    const { productos, total, cliente, fecha, numeroCompra } = datosCompra;
+    const { productos, total, cliente, fecha, numeroCompra, metodoEnvio, costoEnvio, direccionEnvio } = datosCompra;
     
-    const productosHTML = productos.map(p => 
-        `<tr>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${p.nombre}</td>
+    const productosHTML = productos.map(p => {
+        let nombre = p.nombre;
+        if (p.color) nombre += `<br><small style="color: #666;">Color: ${p.color}</small>`;
+        if (p.memoria) nombre += `<br><small style="color: #666;">Memoria: ${p.memoria}</small>`;
+        
+        return `<tr>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${nombre}</td>
             <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${p.cantidad}</td>
             <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">USD $${p.precio.toLocaleString()}</td>
             <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">USD $${p.subtotal.toLocaleString()}</td>
-        </tr>`
-    ).join('');
+        </tr>`;
+    }).join('');
+    
+    // Formatear información de envío para el cliente
+    let textoEnvioCliente = '';
+    let costoEnvioTexto = 'GRATIS 🎁';
+    
+    if (metodoEnvio === 'retiro') {
+        textoEnvioCliente = '🏪 Retiro en tienda\n📍 Moreno 840, CP 3283, San José, Entre Ríos';
+        costoEnvioTexto = 'GRATIS';
+    } else {
+        textoEnvioCliente = `🚚 Envío a domicilio\n📍 ${direccionEnvio || 'No especificada'}`;
+        costoEnvioTexto = costoEnvio > 0 ? `ARS $${costoEnvio.toLocaleString()}` : 'GRATIS';
+    }
     
     const templateParams = {
         to_email: cliente.email,
@@ -98,10 +127,12 @@ async function enviarEmailCliente(datosCompra) {
         numero_compra: numeroCompra,
         fecha_compra: new Date(fecha).toLocaleString('es-AR'),
         productos_html: productosHTML,
+        productos: productosHTML, // Por si el template usa {{productos}} en vez de {{{productos_html}}}
         subtotal: `USD $${total.toLocaleString()}`,
-        envio: 'GRATIS 🎁',
+        envio: costoEnvioTexto,
         total: `USD $${total.toLocaleString()}`,
-        direccion_envio: cliente.direccion || 'A confirmar',
+        envio_info: textoEnvioCliente,
+        direccion_envio: direccionEnvio || 'Retiro en tienda',
         telefono_tienda: '3447 416011',
         direccion_tienda: 'Moreno 840, CP 3283, San José, Colón, Entre Ríos'
     };

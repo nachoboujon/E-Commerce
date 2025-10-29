@@ -1229,7 +1229,10 @@
                                     id: orden.numeroOrden,
                                     fecha: orden.fechaOrden,
                                     productos: orden.productos,
-                                    total: orden.total
+                                    total: orden.total,
+                                    metodoEnvio: metodoEnvio,
+                                    costoEnvio: costoEnvio,
+                                    direccionEnvio: direccionCompletaEnvio
                                 }, sesion);
                             }
                             
@@ -1278,6 +1281,11 @@
                         
                         // Enviar emails al administrador y cliente
                         if (window.EmailService) {
+                            // Agregar información de envío a la compra
+                            ultimaCompra.metodoEnvio = metodoEnvio;
+                            ultimaCompra.costoEnvio = costoEnvio;
+                            ultimaCompra.direccionEnvio = direccionCompletaEnvio;
+                            
                             EmailService.procesarEmailsCompra(ultimaCompra, sesion)
                                 .catch(err => console.warn('⚠️ Error al enviar emails:', err));
                         }

@@ -350,18 +350,7 @@ async function verificarConexionAPI() {
  */
 async function sincronizarProductosDesdeBackend(forzar = false) {
     try {
-        // ⚠️ IMPORTANTE: Solo sincronizar productos si no hay cambios locales pendientes
-        // Esto evita que se sobrescriban los stocks reducidos por compras offline
-        if (!forzar) {
-            const historialCompras = localStorage.getItem('historialCompras');
-            const hayComprasPendientes = historialCompras && JSON.parse(historialCompras).length > 0;
-            
-            if (hayComprasPendientes) {
-                console.warn('⚠️ Hay compras en historial local - NO sincronizando para preservar stock local');
-                console.warn('💡 Si quieres sincronizar, limpia el historial desde el panel de admin');
-                return false;
-            }
-        }
+        console.log('🔄 Sincronizando productos desde MongoDB...');
         
         const productos = await obtenerProductosAPI();
         
@@ -401,8 +390,9 @@ async function inicializarAPIService() {
     if (conectado) {
         console.log('✅ Conectado al backend - Usando MongoDB');
         
-        // Sincronizar productos automáticamente
-        await sincronizarProductosDesdeBackend();
+        // ✅ SINCRONIZAR SIEMPRE AL INICIAR - el backend es la fuente de verdad
+        await sincronizarProductosDesdeBackend(true);
+        console.log('📥 Stock sincronizado desde MongoDB');
     } else {
         console.log('⚠️  Backend no disponible - Usando localStorage (modo offline)');
     }
