@@ -81,8 +81,12 @@ router.post('/', verificarToken, async (req, res) => {
         const descuento = 0;
         const total = subtotal + envio - descuento;
         
+        // ✅ GENERAR NÚMERO DE ORDEN ÚNICO
+        const numeroOrden = 'PHN-' + Date.now();
+        
         // Crear orden
         console.log('📝 Creando orden con datos:', {
+            numeroOrden,
             usuario: req.usuario._id,
             productos: productosValidados.length,
             subtotal,
@@ -94,6 +98,7 @@ router.post('/', verificarToken, async (req, res) => {
         });
         
         const nuevaOrden = new Orden({
+            numeroOrden, // ✅ AGREGADO
             usuario: req.usuario._id,
             productos: productosValidados,
             subtotal,
