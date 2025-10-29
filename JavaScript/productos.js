@@ -832,22 +832,15 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
         // Obtener memorias únicas disponibles para este color
         let memoriasDisponibles = [...new Set(variantesDelColor.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
         
-        console.log(`📋 Memorias de variantes para color "${colorSeleccionado}":`, memoriasDisponibles);
+        console.log(`📋 Memorias encontradas para color "${colorSeleccionado}":`, memoriasDisponibles);
         
-        // ✅ Si NO hay memorias en variantes, usar TODAS las del array base
+        // ✅ Si NO hay memorias para este color, NO actualizar el selector (dejar como está)
         if (memoriasDisponibles.length === 0) {
-            console.log(`⚠️ No hay variantes para el color "${colorSeleccionado}"`);
-            const memoriasBase = producto.memorias || [];
-            if (memoriasBase.length > 0) {
-                console.log(`🔄 Mostrando TODAS las memorias del array base:`, memoriasBase);
-                memoriasDisponibles = memoriasBase;
-            } else {
-                console.log(`⚠️ No hay memorias base, extrayendo de TODAS las variantes`);
-                memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
-            }
+            console.log(`⚠️ No hay variantes para el color "${colorSeleccionado}", selector no se modifica`);
+            return; // Salir sin modificar
         }
         
-        console.log(`📋 Memorias FINALES a mostrar:`, memoriasDisponibles);
+        console.log(`📋 Memorias a mostrar para "${colorSeleccionado}":`, memoriasDisponibles);
         
         // Guardar la memoria actualmente seleccionada
         const memoriaActual = memoriaSelector.value;
@@ -884,22 +877,15 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
         // Obtener colores únicos disponibles para esta memoria
         let coloresDisponibles = [...new Set(variantesDeLaMemoria.map(v => v.color).filter(c => c && c.trim() !== ''))];
         
-        console.log(`📋 Colores de variantes para memoria "${memoriaSeleccionada}":`, coloresDisponibles);
+        console.log(`📋 Colores encontrados para memoria "${memoriaSeleccionada}":`, coloresDisponibles);
         
-        // ✅ Si NO hay colores en variantes, usar TODOS los del array base
+        // ✅ Si NO hay colores para esta memoria, NO actualizar el selector (dejar como está)
         if (coloresDisponibles.length === 0) {
-            console.log(`⚠️ No hay variantes para la memoria "${memoriaSeleccionada}"`);
-            const coloresBase = producto.colores || [];
-            if (coloresBase.length > 0) {
-                console.log(`🔄 Mostrando TODOS los colores del array base:`, coloresBase);
-                coloresDisponibles = coloresBase;
-            } else {
-                console.log(`⚠️ No hay colores base, extrayendo de TODAS las variantes`);
-                coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c && c.trim() !== ''))];
-            }
+            console.log(`⚠️ No hay variantes para la memoria "${memoriaSeleccionada}", selector no se modifica`);
+            return; // Salir sin modificar
         }
         
-        console.log(`📋 Colores FINALES a mostrar:`, coloresDisponibles);
+        console.log(`📋 Colores a mostrar para "${memoriaSeleccionada}":`, coloresDisponibles);
         
         // Guardar el color actualmente seleccionado
         const colorActual = colorSelector.value;
@@ -1153,20 +1139,21 @@ function crearTarjetaProducto(producto) {
     let memoriasDisponibles = [];
     let bateriasDisponibles = [];
     
-    // ✅ SIEMPRE usar arrays base para mostrar TODAS las opciones inicialmente
-    // El filtrado dinámico se encargará de filtrar según variantes al cambiar
+    // ✅ SIEMPRE usar arrays base para COLORES (para mostrar todos los colores)
     coloresDisponibles = producto.colores || [];
+    
+    // ✅ Para MEMORIAS: usar array base inicialmente (el filtrado dinámico se encargará)
     memoriasDisponibles = producto.memorias || [];
     
     // Si NO hay arrays base, extraer de variantes
     if (coloresDisponibles.length === 0 && producto.variantes && producto.variantes.length > 0) {
         coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c && c.trim() !== ''))];
-        console.log(`📦 Producto ${producto.id}: Extrayendo colores desde variantes`);
     }
     if (memoriasDisponibles.length === 0 && producto.variantes && producto.variantes.length > 0) {
         memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
-        console.log(`📦 Producto ${producto.id}: Extrayendo memorias desde variantes`);
     }
+    
+    console.log(`📦 Producto ${producto.id}: Colores=[${coloresDisponibles.join(', ')}], Memorias=[${memoriasDisponibles.join(', ')}]`);
     
     // Si hay variantes, también extraer baterías de ellas
     if (producto.variantes && producto.variantes.length > 0) {
@@ -1312,7 +1299,7 @@ function generarEstrellas(rating) {
 // ============================================================
 
 // Sistema de versiones para forzar actualización de productos
-const VERSION_PRODUCTOS = '6.6'; // ⬆️ Fix: Arrays base + filtrado dinamico correcto
+const VERSION_PRODUCTOS = '6.8'; // ⬆️ Colores del array base + filtrado dinámico de memorias
 const VERSION_KEY = 'versionProductosPhoneSpot';
 
 // Verificar si necesitamos actualizar por nueva versión
