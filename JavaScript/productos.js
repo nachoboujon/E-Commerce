@@ -749,22 +749,7 @@ function inicializarCambioPrecio() {
     
     productosConVariantes.forEach(productoId => {
         console.log(`⚙️ Inicializando: ${productoId}`);
-        
-        // ✅ Aplicar filtrado inicial basado en el primer color seleccionado
-        const producto = obtenerProductoPorId(productoId);
-        if (producto && producto.variantes && producto.variantes.length > 0) {
-            const variantesCompletas = producto.variantes.filter(v => 
-                v.color && v.color.trim() !== '' && 
-                v.memoria && v.memoria.trim() !== ''
-            );
-            
-            if (variantesCompletas.length > 0) {
-                console.log(`🔄 Aplicando filtrado inicial para ${productoId}`);
-                actualizarSelectoresDinamicos(productoId, 'color');
-            }
-        }
-        
-        // Actualizar precio inicial
+        // Solo actualizar precio inicial (selectores ya generados filtrados correctamente)
         actualizarPrecioProducto(productoId);
     });
     
@@ -1142,18 +1127,42 @@ function crearTarjetaProducto(producto) {
     // ✅ SIEMPRE usar arrays base para COLORES (para mostrar todos los colores)
     coloresDisponibles = producto.colores || [];
     
-    // ✅ Para MEMORIAS: usar array base inicialmente (el filtrado dinámico se encargará)
-    memoriasDisponibles = producto.memorias || [];
-    
-    // Si NO hay arrays base, extraer de variantes
+    // Si NO hay arrays base de colores, extraer de variantes
     if (coloresDisponibles.length === 0 && producto.variantes && producto.variantes.length > 0) {
         coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c && c.trim() !== ''))];
     }
+    
+    // ✅ MEMORIAS: Si hay variantes completas, mostrar SOLO las del PRIMER color
+    if (producto.variantes && producto.variantes.length > 0) {
+        const variantesCompletas = producto.variantes.filter(v => 
+            v.color && v.color.trim() !== '' && 
+            v.memoria && v.memoria.trim() !== ''
+        );
+        
+        if (variantesCompletas.length > 0 && coloresDisponibles.length > 0) {
+            // Obtener el primer color
+            const primerColor = coloresDisponibles[0].trim();
+            
+            // Filtrar memorias del primer color
+            const variantesDelPrimerColor = variantesCompletas.filter(v => v.color.trim() === primerColor);
+            memoriasDisponibles = [...new Set(variantesDelPrimerColor.map(v => v.memoria.trim()).filter(m => m))];
+            
+            console.log(`📦 Producto ${producto.id}: Memorias iniciales del color "${primerColor}": [${memoriasDisponibles.join(', ')}]`);
+        } else {
+            // Sin variantes completas, usar array base
+            memoriasDisponibles = producto.memorias || [];
+        }
+    } else {
+        // Sin variantes, usar array base
+        memoriasDisponibles = producto.memorias || [];
+    }
+    
+    // Si aún no hay memorias, extraer de variantes
     if (memoriasDisponibles.length === 0 && producto.variantes && producto.variantes.length > 0) {
         memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
     }
     
-    console.log(`📦 Producto ${producto.id}: Colores=[${coloresDisponibles.join(', ')}], Memorias=[${memoriasDisponibles.join(', ')}]`);
+    console.log(`📦 Producto ${producto.id}: Colores=[${coloresDisponibles.join(', ')}], Memorias iniciales=[${memoriasDisponibles.join(', ')}]`);
     
     // Si hay variantes, también extraer baterías de ellas
     if (producto.variantes && producto.variantes.length > 0) {
@@ -1299,7 +1308,7 @@ function generarEstrellas(rating) {
 // ============================================================
 
 // Sistema de versiones para forzar actualización de productos
-const VERSION_PRODUCTOS = '6.8'; // ⬆️ Colores del array base + filtrado dinámico de memorias
+const VERSION_PRODUCTOS = '6.9'; // ⬆️ Memorias YA filtradas desde generación inicial
 const VERSION_KEY = 'versionProductosPhoneSpot';
 
 // Verificar si necesitamos actualizar por nueva versión
