@@ -1,0 +1,329 @@
+{
+  "info": {
+    "name": "PhoneSpot API - Gestión de Clientes",
+    "description": "Colección para obtener y eliminar clientes en PhoneSpot",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Login Admin (Obtener Token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Guardar token automáticamente",
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"token\", jsonData.token);",
+              "    console.log('Token guardado:', jsonData.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identificador\": \"nboujon7@gmail.com\",\n  \"password\": \"Nacho2005\"\n}"
+        },
+        "url": {
+          "raw": "https://phonespot-backend-production.up.railway.app/api/auth/login",
+          "protocol": "https",
+          "host": [
+            "phonespot-backend-production",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Login como administrador para obtener el token JWT"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Obtener Todos los Usuarios",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://phonespot-backend-production.up.railway.app/api/usuarios",
+          "protocol": "https",
+          "host": [
+            "phonespot-backend-production",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "api",
+            "usuarios"
+          ]
+        },
+        "description": "Obtener lista completa de usuarios (requiere token de admin)"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Obtener Solo Clientes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://phonespot-backend-production.up.railway.app/api/usuarios?rol=cliente",
+          "protocol": "https",
+          "host": [
+            "phonespot-backend-production",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "api",
+            "usuarios"
+          ],
+          "query": [
+            {
+              "key": "rol",
+              "value": "cliente"
+            }
+          ]
+        },
+        "description": "Obtener solo clientes (filtrado por rol)"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Obtener Solo Clientes Activos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://phonespot-backend-production.up.railway.app/api/usuarios?rol=cliente&activo=true",
+          "protocol": "https",
+          "host": [
+            "phonespot-backend-production",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "api",
+            "usuarios"
+          ],
+          "query": [
+            {
+              "key": "rol",
+              "value": "cliente"
+            },
+            {
+              "key": "activo",
+              "value": "true"
+            }
+          ]
+        },
+        "description": "Obtener solo clientes activos"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Obtener Usuario por ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://phonespot-backend-production.up.railway.app/api/usuarios/ID_DEL_USUARIO",
+          "protocol": "https",
+          "host": [
+            "phonespot-backend-production",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "api",
+            "usuarios",
+            "ID_DEL_USUARIO"
+          ]
+        },
+        "description": "Obtener un usuario específico por su ID (reemplaza ID_DEL_USUARIO con el ID real)"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Eliminar Usuario (Soft Delete)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://phonespot-backend-production.up.railway.app/api/usuarios/ID_DEL_USUARIO",
+          "protocol": "https",
+          "host": [
+            "phonespot-backend-production",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "api",
+            "usuarios",
+            "ID_DEL_USUARIO"
+          ]
+        },
+        "description": "Desactivar usuario (soft delete) - Reemplaza ID_DEL_USUARIO con el ID real del usuario a eliminar"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Actualizar Usuario",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Nombre Actualizado\",\n  \"email\": \"nuevo@email.com\",\n  \"telefono\": \"1234567890\",\n  \"direccion\": \"Nueva Dirección\",\n  \"activo\": true,\n  \"verificado\": true\n}"
+        },
+        "url": {
+          "raw": "https://phonespot-backend-production.up.railway.app/api/usuarios/ID_DEL_USUARIO",
+          "protocol": "https",
+          "host": [
+            "phonespot-backend-production",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "api",
+            "usuarios",
+            "ID_DEL_USUARIO"
+          ]
+        },
+        "description": "Actualizar datos de un usuario"
+      },
+      "response": []
+    },
+    {
+      "name": "8. Estadísticas de Usuarios",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "https://phonespot-backend-production.up.railway.app/api/usuarios/admin/estadisticas",
+          "protocol": "https",
+          "host": [
+            "phonespot-backend-production",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "api",
+            "usuarios",
+            "admin",
+            "estadisticas"
+          ]
+        },
+        "description": "Obtener estadísticas de usuarios (total, activos, clientes, administradores)"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "https://phonespot-backend-production.up.railway.app/api"
+    }
+  ]
+}
+

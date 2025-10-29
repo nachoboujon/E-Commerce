@@ -17,7 +17,7 @@ const {
 // ============================================================
 router.post('/', verificarToken, async (req, res) => {
     try {
-        const { productos, metodoPago, notas } = req.body;
+        const { productos, metodoPago, metodoEnvio, costoEnvio, direccionEnvio, notas } = req.body;
         
         if (!productos || productos.length === 0) {
             return res.status(400).json({
@@ -55,15 +55,20 @@ router.post('/', verificarToken, async (req, res) => {
                 nombre: producto.nombre,
                 precio: producto.precio,
                 cantidad: item.cantidad,
-                subtotal: subtotalItem
+                subtotal: subtotalItem,
+                // Incluir variantes si vienen del carrito (color, memoria, etc.)
+                color: item.color || null,
+                memoria: item.memoria || null
             });
             
-            // ✅ NO REDUCIR STOCK AQUÍ - Se reducirá cuando se confirme el pago
-            // El stock se actualizará en el endpoint de actualizar estado (línea 219)
+            // ✅ REDUCIR STOCK AL FINALIZAR LA COMPRA (crear orden)
+            producto.stock -= item.cantidad;
+            await producto.save();
+            console.log(`📦 Stock reducido: ${producto.nombre} - Cantidad: ${item.cantidad} - Stock restante: ${producto.stock}`);
         }
         
         // Calcular envío y total
-        const envio = 0; // ✅ ENVÍO GRATIS SIEMPRE
+        const envio = costoEnvio || 0; // ✅ Costo de envío según método seleccionado
         const descuento = 0;
         const total = subtotal + envio - descuento;
         
@@ -76,6 +81,9 @@ router.post('/', verificarToken, async (req, res) => {
             descuento,
             total,
             metodoPago: metodoPago || 'pendiente',
+            metodoEnvio: metodoEnvio || 'retiro',
+            costoEnvio: costoEnvio || 0,
+            direccionEnvio: direccionEnvio || 'Retiro en tienda',
             datosContacto: {
                 nombre: req.usuario.nombre,
                 email: req.usuario.email,
@@ -238,36 +246,9 @@ router.patch('/:id/estado', verificarToken, verificarAdmin, async (req, res) => 
         
         const estadoAnterior = orden.estado;
         
-        // ✅ REDUCIR STOCK CUANDO SE CONFIRMA EL PAGO (procesando)
-        if (estadoAnterior === 'pendiente' && estado === 'procesando') {
-            console.log('💰 Confirmando pago - Reduciendo stock de productos...');
-            
-            for (const item of orden.productos) {
-                const producto = await Producto.findOne({ id: item.productoId });
-                
-                if (!producto) {
-                    return res.status(404).json({
-                        success: false,
-                        message: `Producto ${item.productoId} no encontrado`
-                    });
-                }
-                
-                if (producto.stock < item.cantidad) {
-                    return res.status(400).json({
-                        success: false,
-                        message: `Stock insuficiente para ${producto.nombre}. Stock disponible: ${producto.stock}`
-                    });
-                }
-                
-                // Reducir stock
-                producto.stock -= item.cantidad;
-                await producto.save();
-                console.log(`✅ Stock reducido: ${producto.nombre} - Cantidad: ${item.cantidad} - Stock restante: ${producto.stock}`);
-            }
-        }
-        
         // ✅ DEVOLVER STOCK SI SE CANCELA LA ORDEN
-        if (estado === 'cancelado' && estadoAnterior === 'procesando') {
+        // (El stock ya se redujo al crear la orden, solo necesitamos devolverlo si se cancela)
+        if (estado === 'cancelado' && estadoAnterior !== 'cancelado') {
             console.log('❌ Orden cancelada - Devolviendo stock de productos...');
             
             for (const item of orden.productos) {

@@ -36,6 +36,15 @@ const ordenSchema = new mongoose.Schema({
         subtotal: {
             type: Number,
             required: true
+        },
+        // Variantes del producto (opcionales)
+        color: {
+            type: String,
+            default: null
+        },
+        memoria: {
+            type: String,
+            default: null
         }
     }],
     subtotal: {
@@ -67,6 +76,21 @@ const ordenSchema = new mongoose.Schema({
         type: String,
         enum: ['efectivo', 'usdt', 'pendiente'],
         default: 'pendiente'
+    },
+    // ✅ INFORMACIÓN DE ENVÍO
+    metodoEnvio: {
+        type: String,
+        enum: ['retiro', 'envio-10km', 'envio-40km'],
+        default: 'retiro'
+    },
+    costoEnvio: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    direccionEnvio: {
+        type: String,
+        trim: true
     },
     datosContacto: {
         nombre: String,

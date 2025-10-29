@@ -143,6 +143,18 @@
             animation: shake 0.5s;
         }
 
+        /* Mensaje de carga/información (verde) */
+        .error-message.loading {
+            background: #4caf50;
+            animation: none;
+        }
+
+        /* Mensaje de éxito (verde oscuro) */
+        .error-message.success {
+            background: #2e7d32;
+            animation: none;
+        }
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-10px); }
@@ -293,21 +305,30 @@
             const errorMessage = document.getElementById('errorMessage');
             const errorText = errorMessage.querySelector('i').nextSibling;
             
-            // Mostrar loading
+            // Mostrar loading (VERDE)
+            errorMessage.className = 'error-message show loading';
             errorText.textContent = 'Iniciando sesión...';
-            errorMessage.classList.add('show');
             
             try {
                 // Intentar login
                 const resultado = await Auth.login(username, password);
                 
                 if (resultado.success) {
-                    // Login exitoso
+                    // Login exitoso (VERDE OSCURO)
+                    errorMessage.className = 'error-message show success';
                     errorText.textContent = '✅ Login exitoso! Redirigiendo...';
                     
                     const sesion = resultado.sesion;
+                    
+                    // Verificar si hay redirección pendiente (desde el carrito)
+                    const redirectAfterLogin = localStorage.getItem('redirectAfterLogin');
+                    
                     setTimeout(() => {
-                        if (sesion.rol === 'administrador') {
+                        if (redirectAfterLogin) {
+                            // Limpiar redirección y volver al carrito
+                            localStorage.removeItem('redirectAfterLogin');
+                            window.location.href = redirectAfterLogin;
+                        } else if (sesion.rol === 'administrador') {
                             window.location.href = 'admin.html';
                         } else {
                             window.location.href = '../index.html';
@@ -316,16 +337,16 @@
                 } else {
                     // Login fallido
                     if (resultado.requiresVerification) {
-                        // Redirigir a verificación
+                        // Redirigir a verificación (VERDE - es informativo)
+                        errorMessage.className = 'error-message show loading';
                         errorText.textContent = resultado.message + '. Redirigiendo a verificación...';
-                        errorMessage.classList.add('show');
                         setTimeout(() => {
                             window.location.href = `verificar-email.html?email=${encodeURIComponent(resultado.email)}`;
                         }, 2000);
                     } else {
-                        // Error normal
+                        // Error normal (ROJO)
+                        errorMessage.className = 'error-message show';
                         errorText.textContent = resultado.message;
-                        errorMessage.classList.add('show');
                         
                         // Ocultar mensaje después de 3 segundos
                         setTimeout(() => {
@@ -335,8 +356,9 @@
                 }
             } catch (error) {
                 console.error('Error en login:', error);
+                // Error (ROJO)
+                errorMessage.className = 'error-message show';
                 errorText.textContent = 'Error al iniciar sesión. Inténtalo de nuevo.';
-                errorMessage.classList.add('show');
                 setTimeout(() => {
                     errorMessage.classList.remove('show');
                 }, 3000);

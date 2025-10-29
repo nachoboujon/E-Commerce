@@ -116,16 +116,29 @@ async function enviarEmailVerificacion(usuario, codigo) {
    EMAIL DE CONFIRMACIÓN DE COMPRA (CLIENTE)
    ================================================================= */
 async function enviarEmailConfirmacionCompra(orden, usuario) {
-    const productosHTML = orden.productos.map(item => `
+    const productosHTML = orden.productos.map(item => {
+        // Construir nombre del producto con variantes
+        let nombreCompleto = `<strong>${item.nombre}</strong>`;
+        const variantes = [];
+        
+        if (item.color) variantes.push(`Color: ${item.color}`);
+        if (item.memoria) variantes.push(`Memoria: ${item.memoria}`);
+        
+        if (variantes.length > 0) {
+            nombreCompleto += `<br><small style="color: #666;">${variantes.join(' | ')}</small>`;
+        }
+        
+        return `
         <tr style="border-bottom: 1px solid #eeeeee;">
             <td style="padding: 15px 10px;">
-                <strong>${item.nombre}</strong>
+                ${nombreCompleto}
             </td>
             <td style="padding: 15px 10px; text-align: center;">${item.cantidad}</td>
             <td style="padding: 15px 10px; text-align: right;">$${item.precio.toLocaleString('es-AR')}</td>
             <td style="padding: 15px 10px; text-align: right;"><strong>$${(item.precio * item.cantidad).toLocaleString('es-AR')}</strong></td>
         </tr>
-    `).join('');
+        `;
+    }).join('');
 
     const mailOptions = {
         from: `"PhoneSpot E-Commerce" <${process.env.EMAIL_USER}>`,
@@ -204,8 +217,14 @@ async function enviarEmailConfirmacionCompra(orden, usuario) {
                     
                     <div style="background-color: #e7f3ff; border-left: 4px solid #0066cc; padding: 15px; margin: 20px 0;">
                         <p style="margin: 0; font-size: 14px;">
-                            <strong>📍 Dirección de Envío:</strong><br>
-                            ${usuario.direccion || 'No especificada'}
+                            <strong>📦 Método de Envío:</strong><br>
+                            ${orden.metodoEnvio === 'retiro' ? '🏪 Retiro en tienda - GRATIS' : 
+                              orden.metodoEnvio === 'envio-10km' ? '🚚 Envío hasta 10km - ARS $3.000' :
+                              orden.metodoEnvio === 'envio-40km' ? '🚛 Envío 10-40km - ARS $5.000' : 'No especificado'}
+                        </p>
+                        <p style="margin: 10px 0 0 0; font-size: 14px;">
+                            <strong>📍 ${orden.metodoEnvio === 'retiro' ? 'Retiro en:' : 'Dirección de Envío:'}</strong><br>
+                            ${orden.direccionEnvio || usuario.direccion || 'No especificada'}
                         </p>
                     </div>
                     
@@ -247,9 +266,28 @@ async function enviarEmailConfirmacionCompra(orden, usuario) {
    EMAIL DE NOTIFICACIÓN AL ADMINISTRADOR
    ================================================================= */
 async function enviarEmailNotificacionAdmin(orden, usuario) {
-    const productosHTML = orden.productos.map(item => `
-        <li>${item.nombre} - Cantidad: ${item.cantidad} - $${(item.precio * item.cantidad).toLocaleString('es-AR')}</li>
-    `).join('');
+    const productosHTML = orden.productos.map(item => {
+        // Construir detalles del producto con color y memoria si existen
+        let detallesProducto = `<strong>${item.nombre}</strong>`;
+        
+        // Agregar color si existe
+        if (item.color) {
+            detallesProducto += `<br><span style="color: #666; font-size: 14px;">📱 Color: ${item.color}</span>`;
+        }
+        
+        // Agregar memoria si existe
+        if (item.memoria) {
+            detallesProducto += `<br><span style="color: #666; font-size: 14px;">💾 Memoria: ${item.memoria}</span>`;
+        }
+        
+        return `
+        <li style="margin-bottom: 15px; padding: 10px; background-color: #ffffff; border-radius: 5px;">
+            ${detallesProducto}
+            <br><span style="color: #333;">Cantidad: <strong>${item.cantidad}</strong></span>
+            <br><span style="color: #28a745; font-weight: bold;">Precio: $${(item.precio * item.cantidad).toLocaleString('es-AR')}</span>
+        </li>
+        `;
+    }).join('');
 
     const mailOptions = {
         from: `"PhoneSpot Sistema" <${process.env.EMAIL_USER}>`,
@@ -295,7 +333,17 @@ async function enviarEmailNotificacionAdmin(orden, usuario) {
                         <p><strong>Nombre:</strong> ${usuario.nombre}</p>
                         <p><strong>Email:</strong> ${usuario.email}</p>
                         <p><strong>Teléfono:</strong> ${usuario.telefono || 'No especificado'}</p>
-                        <p><strong>Dirección:</strong> ${usuario.direccion || 'No especificada'}</p>
+                    </div>
+                    
+                    <h3>📦 Información de Envío:</h3>
+                    <div class="info-box" style="${orden.metodoEnvio === 'retiro' ? 'background-color: #e8f5e9; border-left: 4px solid #4caf50;' : 'background-color: #e7f3ff; border-left: 4px solid #0066cc;'}">
+                        <p><strong>Método:</strong> ${
+                            orden.metodoEnvio === 'retiro' ? '🏪 Retiro en tienda - GRATIS' : 
+                            orden.metodoEnvio === 'envio-10km' ? '🚚 Envío hasta 10km - ARS $3.000' :
+                            orden.metodoEnvio === 'envio-40km' ? '🚛 Envío 10-40km - ARS $5.000' : 'No especificado'
+                        }</p>
+                        <p><strong>${orden.metodoEnvio === 'retiro' ? 'Retiro en:' : 'Dirección de Envío:'}</strong><br>
+                        ${orden.direccionEnvio || usuario.direccion || 'No especificada'}</p>
                     </div>
                     
                     <h3>📦 Productos del Pedido:</h3>

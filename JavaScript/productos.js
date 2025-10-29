@@ -678,7 +678,10 @@ function guardarHistorialCompra(carrito) {
             nombre: item.nombre,
             cantidad: item.cantidad,
             precio: item.precio,
-            subtotal: item.precio * item.cantidad
+            subtotal: item.precio * item.cantidad,
+            // Incluir variantes si existen
+            color: item.varianteSeleccionada?.color || item.color || null,
+            memoria: item.varianteSeleccionada?.memoria || item.memoria || null
         })),
         total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0)
     };
@@ -978,7 +981,16 @@ function actualizarPrecioProducto(productoId) {
     
     // 🔍 Verificar stock disponible (considerando lo que hay en el carrito)
     const carritoStr = localStorage.getItem('carritoCell');
-    const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+    let carritoData = carritoStr ? JSON.parse(carritoStr) : null;
+    let carrito = [];
+    
+    // Extraer productos del carrito (compatibilidad con formato nuevo y antiguo)
+    if (carritoData && carritoData.productos) {
+        carrito = carritoData.productos;
+    } else if (Array.isArray(carritoData)) {
+        carrito = carritoData;
+    }
+    
     const enCarrito = carrito.filter(item => {
         if (item.id !== productoId) return false;
         if (!item.varianteSeleccionada) return true;
@@ -1076,7 +1088,16 @@ function crearTarjetaProducto(producto) {
     
     // 🔍 Verificar stock disponible (considerando lo que hay en el carrito)
     const carritoStr = localStorage.getItem('carritoCell');
-    const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+    let carritoData = carritoStr ? JSON.parse(carritoStr) : null;
+    let carrito = [];
+    
+    // Extraer productos del carrito (compatibilidad con formato nuevo y antiguo)
+    if (carritoData && carritoData.productos) {
+        carrito = carritoData.productos;
+    } else if (Array.isArray(carritoData)) {
+        carrito = carritoData;
+    }
+    
     const enCarrito = carrito.find(item => item.id === producto.id);
     const cantidadEnCarrito = enCarrito ? enCarrito.cantidad : 0;
     const stockDisponible = stockInicial - cantidadEnCarrito;

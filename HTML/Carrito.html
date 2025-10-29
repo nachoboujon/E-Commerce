@@ -403,24 +403,60 @@
                     <div id="advertencia-mayorista" style="display: none; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 13px; color: #856404; text-align: center;">
                     </div>
                     
-                    <div class="resumen-linea">
-                        <span>Subtotal</span>
-                        <span id="subtotal">$0</span>
+                    <!-- 📦 MÉTODO DE ENVÍO -->
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f8f8; border-radius: 8px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #000;">
+                            <i class="fas fa-truck"></i> Método de Envío
+                        </label>
+                        <select id="metodo-envio" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-weight: 500;" onchange="calcularTotalesConEnvio()">
+                            <option value="retiro">🏪 Retiro en tienda - GRATIS</option>
+                            <option value="envio-10km">🚚 Envío hasta 10km - ARS $3.000</option>
+                            <option value="envio-40km">🚛 Envío 10-40km - ARS $5.000</option>
+                        </select>
+                    </div>
+
+                    <!-- 📍 DIRECCIÓN DE ENVÍO (solo si selecciona envío) -->
+                    <div id="direccion-envio-container" style="display: none; margin-bottom: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #0066cc;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #000;">
+                            <i class="fas fa-map-marker-alt"></i> Dirección de Envío *
+                        </label>
+                        <textarea id="direccion-envio" 
+                                  rows="3" 
+                                  placeholder="Ingresa tu dirección completa (calle, número, barrio, ciudad)"
+                                  style="width: 100%; padding: 12px; border: 2px solid #0066cc; border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+                        <small style="color: #666; font-size: 12px;">
+                            <i class="fas fa-info-circle"></i> Asegúrate de incluir todos los detalles para una entrega exitosa
+                        </small>
+                    </div>
+
+                    <!-- 🏪 DIRECCIÓN DE RETIRO (solo si selecciona retiro) -->
+                    <div id="direccion-retiro-info" style="margin-bottom: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;">
+                        <p style="margin: 0; font-size: 13px; color: #2e7d32;">
+                            <strong><i class="fas fa-store"></i> Retiro en:</strong><br>
+                            📍 Moreno 840, CP 3283<br>
+                            San José, Colón, Entre Ríos<br>
+                            📞 3447 416011
+                        </p>
                     </div>
                     
                     <div class="resumen-linea">
-                        <span>Envío</span>
-                        <span id="envio">$5.000</span>
+                        <span>Subtotal productos</span>
+                        <span id="subtotal">USD $0</span>
+                    </div>
+                    
+                    <div class="resumen-linea" style="background: #f0f8ff; padding: 8px; border-radius: 6px; margin: 8px 0;">
+                        <span>Envío <small style="color: #666; font-size: 11px;">(pesos ARS)</small></span>
+                        <span id="envio" style="font-weight: 600; color: #0066cc;">GRATIS</span>
                     </div>
                     
                     <div class="resumen-linea">
                         <span>Descuento</span>
-                        <span id="descuento" style="color: var(--crl-success);">-$0</span>
+                        <span id="descuento" style="color: var(--crl-success);">-USD $0</span>
                     </div>
                     
                     <div class="resumen-linea total">
-                        <span>Total</span>
-                        <span id="total">$0</span>
+                        <span>Total a pagar <small style="display: block; font-size: 11px; font-weight: 400; color: #666;">(solo productos)</small></span>
+                        <span id="total">USD $0</span>
                     </div>
 
                     <button class="btn-checkout" onclick="finalizarCompra()">
@@ -494,7 +530,51 @@
         // Cargar productos del carrito
         function cargarCarrito() {
             const carritoStr = localStorage.getItem('carritoCell');
-            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            let carrito = [];
+            
+            if (carritoStr) {
+                try {
+                    const carritoData = JSON.parse(carritoStr);
+                    
+                    // Verificar si tiene el formato nuevo con timestamp
+                    if (carritoData.timestamp && carritoData.productos) {
+                        const ahora = new Date().getTime();
+                        const tiempoTranscurrido = ahora - carritoData.timestamp;
+                        const UNA_HORA = 60 * 60 * 1000; // 1 hora en milisegundos
+                        
+                        // Si pasó más de 1 hora, vaciar el carrito
+                        if (tiempoTranscurrido > UNA_HORA) {
+                            console.log('⏰ Carrito expirado (más de 1 hora). Vaciando automáticamente...');
+                            localStorage.removeItem('carritoCell');
+                            localStorage.removeItem('carritoCell_legacy');
+                            carrito = [];
+                            
+                            // Mostrar alerta al usuario
+                            alert('⏰ Tu carrito expiró después de 1 hora.\n\nEl stock ha sido liberado para otros clientes.\n\nPuedes volver a agregar productos si lo deseas.');
+                        } else {
+                            carrito = carritoData.productos;
+                            
+                            // Mostrar tiempo restante en consola
+                            const tiempoRestante = UNA_HORA - tiempoTranscurrido;
+                            const minutosRestantes = Math.floor(tiempoRestante / (60 * 1000));
+                            console.log(`🕐 Carrito válido. Expira en ${minutosRestantes} minutos.`);
+                        }
+                    } else {
+                        // Formato antiguo (sin timestamp)
+                        carrito = Array.isArray(carritoData) ? carritoData : [];
+                        
+                        // Re-guardar con timestamp
+                        const carritoConTimestamp = {
+                            productos: carrito,
+                            timestamp: new Date().getTime()
+                        };
+                        localStorage.setItem('carritoCell', JSON.stringify(carritoConTimestamp));
+                    }
+                } catch (error) {
+                    console.error('Error al cargar carrito:', error);
+                    carrito = [];
+                }
+            }
             
             actualizarBadgeCarrito();
 
@@ -529,6 +609,13 @@
                     <div class="carrito-item-info">
                         <h3>${producto.nombre}</h3>
                         <p>Precio unitario: USD $${producto.precio.toLocaleString()}</p>
+                        ${producto.varianteSeleccionada && (producto.varianteSeleccionada.color || producto.varianteSeleccionada.memoria) ? `
+                            <p style="color: #666; font-size: 13px; margin-top: 5px;">
+                                ${producto.varianteSeleccionada.color ? `<span>📱 ${producto.varianteSeleccionada.color}</span>` : ''}
+                                ${producto.varianteSeleccionada.color && producto.varianteSeleccionada.memoria ? ' | ' : ''}
+                                ${producto.varianteSeleccionada.memoria ? `<span>💾 ${producto.varianteSeleccionada.memoria}</span>` : ''}
+                            </p>
+                        ` : ''}
                         
                         <div class="cantidad-control">
                             <button onclick="cambiarCantidad(${index}, -1)">
@@ -557,7 +644,15 @@
         // Cambiar cantidad de producto
         function cambiarCantidad(index, cambio) {
             const carritoStr = localStorage.getItem('carritoCell');
-            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            let carritoData = carritoStr ? JSON.parse(carritoStr) : null;
+            let carrito = [];
+            
+            // Extraer productos del carrito
+            if (carritoData && carritoData.productos) {
+                carrito = carritoData.productos;
+            } else if (Array.isArray(carritoData)) {
+                carrito = carritoData;
+            }
             
             if (carrito[index]) {
                 const productoModificado = carrito[index];
@@ -574,7 +669,12 @@
                     alert('Máximo 10 unidades por producto');
                 }
                 
-                localStorage.setItem('carritoCell', JSON.stringify(carrito));
+                // Guardar con timestamp actualizado
+                const carritoConTimestamp = {
+                    productos: carrito,
+                    timestamp: new Date().getTime()
+                };
+                localStorage.setItem('carritoCell', JSON.stringify(carritoConTimestamp));
                 cargarCarrito();
                 
                 // 🔄 Disparar evento de actualización
@@ -586,11 +686,25 @@
         function eliminarDelCarrito(index) {
             if (confirm('¿Eliminar este producto del carrito?')) {
                 const carritoStr = localStorage.getItem('carritoCell');
-                const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+                let carritoData = carritoStr ? JSON.parse(carritoStr) : null;
+                let carrito = [];
+                
+                // Extraer productos del carrito
+                if (carritoData && carritoData.productos) {
+                    carrito = carritoData.productos;
+                } else if (Array.isArray(carritoData)) {
+                    carrito = carritoData;
+                }
                 
                 const productoEliminado = carrito[index];
                 carrito.splice(index, 1);
-                localStorage.setItem('carritoCell', JSON.stringify(carrito));
+                
+                // Guardar con timestamp actualizado
+                const carritoConTimestamp = {
+                    productos: carrito,
+                    timestamp: new Date().getTime()
+                };
+                localStorage.setItem('carritoCell', JSON.stringify(carritoConTimestamp));
                 
                 cargarCarrito();
                 
@@ -624,7 +738,15 @@
          */
         function dispararEventoCarrito(tipo, datos) {
             const carritoStr = localStorage.getItem('carritoCell');
-            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            let carritoData = carritoStr ? JSON.parse(carritoStr) : null;
+            let carrito = [];
+            
+            // Extraer productos del carrito
+            if (carritoData && carritoData.productos) {
+                carrito = carritoData.productos;
+            } else if (Array.isArray(carritoData)) {
+                carrito = carritoData;
+            }
             
             const evento = new CustomEvent('carritoActualizado', {
                 detail: { tipo, datos, carrito }
@@ -632,27 +754,63 @@
             window.dispatchEvent(evento);
         }
 
-        // Calcular totales
-        function calcularTotales(carrito) {
+        // Calcular totales con envío
+        function calcularTotalesConEnvio() {
+            const carritoStr = localStorage.getItem('carritoCell');
+            let carritoData = carritoStr ? JSON.parse(carritoStr) : null;
+            let carrito = [];
+            
+            // Extraer productos del carrito
+            if (carritoData && carritoData.productos) {
+                carrito = carritoData.productos;
+            } else if (Array.isArray(carritoData)) {
+                carrito = carritoData;
+            }
+            
+            if (carrito.length === 0) return;
+            
             const totalProductos = carrito.reduce((sum, item) => sum + item.cantidad, 0);
             let subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             
             // ✨ LÓGICA DE PRECIO MAYORISTA
-            // Si hay menos de 3 productos, agregar +10 USD por producto
             let cargoMayorista = 0;
             if (totalProductos < 3 && totalProductos > 0) {
-                cargoMayorista = totalProductos * 10; // +10 USD por cada producto
+                cargoMayorista = totalProductos * 10;
                 subtotal += cargoMayorista;
             }
             
-            const envio = 0; // ✅ ENVÍO GRATIS SIEMPRE
+            // 📦 CÁLCULO DE ENVÍO SEGÚN MÉTODO SELECCIONADO
+            const metodoEnvio = document.getElementById('metodo-envio').value;
+            const direccionEnvioContainer = document.getElementById('direccion-envio-container');
+            const direccionRetiroInfo = document.getElementById('direccion-retiro-info');
+            
+            let costoEnvio = 0;
+            let textoEnvio = 'GRATIS';
+            
+            if (metodoEnvio === 'retiro') {
+                costoEnvio = 0;
+                textoEnvio = 'GRATIS';
+                direccionEnvioContainer.style.display = 'none';
+                direccionRetiroInfo.style.display = 'block';
+            } else if (metodoEnvio === 'envio-10km') {
+                costoEnvio = 3000;
+                textoEnvio = 'ARS $3.000';
+                direccionEnvioContainer.style.display = 'block';
+                direccionRetiroInfo.style.display = 'none';
+            } else if (metodoEnvio === 'envio-40km') {
+                costoEnvio = 5000;
+                textoEnvio = 'ARS $5.000';
+                direccionEnvioContainer.style.display = 'block';
+                direccionRetiroInfo.style.display = 'none';
+            }
+            
             const descuento = 0;
-            const total = subtotal + envio - descuento;
+            const totalProductos = subtotal - descuento; // Total solo de productos en USD
             
             document.getElementById('subtotal').textContent = 'USD $' + subtotal.toLocaleString();
-            document.getElementById('envio').textContent = 'GRATIS';
+            document.getElementById('envio').textContent = textoEnvio;
             document.getElementById('descuento').textContent = '-USD $' + descuento.toLocaleString();
-            document.getElementById('total').textContent = 'USD $' + total.toLocaleString();
+            document.getElementById('total').textContent = 'USD $' + totalProductos.toLocaleString();
             
             // ⚠️ Mostrar advertencia si hay cargo mayorista
             const advertenciaMayorista = document.getElementById('advertencia-mayorista');
@@ -671,11 +829,25 @@
                 }
             }
         }
+        
+        // Calcular totales (función legacy para compatibilidad)
+        function calcularTotales(carrito) {
+            calcularTotalesConEnvio();
+        }
 
         // Actualizar badge del carrito
         function actualizarBadgeCarrito() {
             const carritoStr = localStorage.getItem('carritoCell');
-            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            let carritoData = carritoStr ? JSON.parse(carritoStr) : null;
+            let carrito = [];
+            
+            // Extraer productos del carrito
+            if (carritoData && carritoData.productos) {
+                carrito = carritoData.productos;
+            } else if (Array.isArray(carritoData)) {
+                carrito = carritoData;
+            }
+            
             const totalProductos = carrito.reduce((sum, item) => sum + item.cantidad, 0);
             
             const badge = document.querySelector('.cart-badge');
@@ -695,14 +867,11 @@
                 return;
             }
             
-            // ✅ VALIDAR QUE TENGA TOKEN JWT (necesario para crear órdenes en el backend)
+            // ✅ VALIDAR TOKEN JWT - Solo mostrar advertencia si realmente intenta usar backend
+            // NO bloquear al usuario, solo advertir en consola
             if (!sesion.token && window.BACKEND_DISPONIBLE) {
-                console.warn('⚠️ Sesión sin token JWT detectada');
-                if (confirm('Tu sesión expiró. Por favor, inicia sesión nuevamente para continuar con la compra.')) {
-                    // Cerrar sesión y redirigir al login
-                    Auth.logout();
-                }
-                return;
+                console.warn('⚠️ Sesión sin token JWT - Se usará modo offline si el backend no está disponible');
+                // No hacer nada más, dejar que el usuario continúe normalmente
             }
             
             console.log('🔐 Token JWT presente:', sesion.token ? 'Sí ✅' : 'No (modo offline)');
@@ -711,21 +880,40 @@
             }
             
             const carritoStr = localStorage.getItem('carritoCell');
-            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            let carritoData = carritoStr ? JSON.parse(carritoStr) : null;
+            let carrito = [];
+            
+            // Extraer productos del carrito
+            if (carritoData && carritoData.productos) {
+                carrito = carritoData.productos;
+            } else if (Array.isArray(carritoData)) {
+                carrito = carritoData;
+            }
             
             if (carrito.length === 0) {
                 alert('El carrito está vacío');
                 return;
             }
             
-            // Calcular totales con lógica de mayorista
+            // Validar método de envío y dirección
+            const metodoEnvio = document.getElementById('metodo-envio').value;
+            const direccionEnvio = document.getElementById('direccion-envio').value.trim();
+            
+            // Si es envío, validar que haya dirección
+            if (metodoEnvio !== 'retiro' && !direccionEnvio) {
+                alert('⚠️ Por favor, ingresa tu dirección de envío para continuar con la compra.');
+                document.getElementById('direccion-envio').focus();
+                return;
+            }
+            
+            // Calcular totales con lógica de mayorista y envío
             const totalProductos = carrito.reduce((sum, item) => sum + item.cantidad, 0);
             let subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             
             // ✨ LÓGICA DE PRECIO MAYORISTA
             let cargoMayorista = 0;
             if (totalProductos < 3 && totalProductos > 0) {
-                cargoMayorista = totalProductos * 10; // +10 USD por cada producto
+                cargoMayorista = totalProductos * 10;
                 subtotal += cargoMayorista;
             }
             
@@ -734,14 +922,26 @@
             
             if (!validacion.valido) {
                 alert('❌ No se puede procesar la compra:\n\n' + validacion.errores.join('\n\n') + '\n\nPor favor, ajusta las cantidades.');
-                
-                // Recargar carrito para mostrar stock actualizado
                 cargarCarrito();
                 return;
             }
             
-            const envio = 0; // ✅ ENVÍO GRATIS SIEMPRE
-            const total = subtotal + envio;
+            // 📦 CALCULAR COSTO DE ENVÍO
+            let costoEnvio = 0;
+            let textoMetodoEnvio = '';
+            
+            if (metodoEnvio === 'retiro') {
+                costoEnvio = 0;
+                textoMetodoEnvio = 'Retiro en tienda';
+            } else if (metodoEnvio === 'envio-10km') {
+                costoEnvio = 3000;
+                textoMetodoEnvio = 'Envío hasta 10km';
+            } else if (metodoEnvio === 'envio-40km') {
+                costoEnvio = 5000;
+                textoMetodoEnvio = 'Envío 10-40km';
+            }
+            
+            const totalProductosUSD = subtotal; // Total solo de productos en USD
             
             let mensajeMayorista = '';
             if (cargoMayorista > 0) {
@@ -750,13 +950,20 @@
                 mensajeMayorista = `\n✅ Precio mayorista aplicado (3+ productos)\n`;
             }
             
+            const textoEnvio = costoEnvio === 0 ? 'GRATIS 🎁' : `ARS $${costoEnvio.toLocaleString()}`;
+            const textoDestino = metodoEnvio === 'retiro' 
+                ? '\n📍 Retiro en: Moreno 840, San José, Entre Ríos\n'
+                : `\n📍 Envío a: ${direccionEnvio}\n`;
+            
             const confirmacion = confirm(
                 `Resumen de compra:\n\n` +
                 `Productos: ${carrito.length} (${totalProductos} unidades)\n` +
                 mensajeMayorista +
                 `Subtotal: USD $${subtotal.toLocaleString()}\n` +
-                `Envío: GRATIS 🎁\n` +
-                `Total: USD $${total.toLocaleString()}\n\n` +
+                `${textoMetodoEnvio}: ${textoEnvio}\n` +
+                textoDestino +
+                `Total a pagar: USD $${totalProductosUSD.toLocaleString()}` +
+                (costoEnvio > 0 ? ` + ARS $${costoEnvio.toLocaleString()} envío` : '') + `\n\n` +
                 `¿Confirmar compra?`
             );
             
@@ -775,9 +982,15 @@
                     const ordenData = {
                         productos: carrito.map(item => ({
                             productoId: item.id,
-                            cantidad: item.cantidad
+                            cantidad: item.cantidad,
+                            // Incluir variantes del producto (color, memoria, etc.)
+                            color: item.varianteSeleccionada?.color || item.color || null,
+                            memoria: item.varianteSeleccionada?.memoria || item.memoria || null
                         })),
-                        metodoPago: 'pendiente', // El usuario coordinará después
+                        metodoPago: 'pendiente',
+                        metodoEnvio: metodoEnvio,
+                        costoEnvio: costoEnvio,
+                        direccionEnvio: metodoEnvio === 'retiro' ? 'Retiro en tienda - Moreno 840, San José, Entre Ríos' : direccionEnvio,
                         notas: `Compra desde PhoneSpot - ${new Date().toLocaleString()}`
                     };
                     

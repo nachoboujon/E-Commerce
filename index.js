@@ -153,20 +153,65 @@ function actualizarBadgeCarrito() {
 }
 
 /**
- * Guardar carrito en localStorage
+ * Guardar carrito en localStorage con timestamp
  */
 function guardarCarritoEnStorage() {
-    localStorage.setItem('carritoCell', JSON.stringify(carrito));
+    const carritoConTimestamp = {
+        productos: carrito,
+        timestamp: new Date().getTime()
+    };
+    localStorage.setItem('carritoCell', JSON.stringify(carritoConTimestamp));
+    
+    // También guardar como JSON simple para compatibilidad con código existente
+    localStorage.setItem('carritoCell_legacy', JSON.stringify(carrito));
 }
 
 /**
- * Cargar carrito desde localStorage
+ * Cargar carrito desde localStorage y verificar expiración
  */
 function cargarCarritoDesdeStorage() {
     const carritoGuardado = localStorage.getItem('carritoCell');
     if (carritoGuardado) {
-        carrito = JSON.parse(carritoGuardado);
+        try {
+            const carritoData = JSON.parse(carritoGuardado);
+            
+            // Verificar si tiene el formato nuevo con timestamp
+            if (carritoData.timestamp && carritoData.productos) {
+                const ahora = new Date().getTime();
+                const tiempoTranscurrido = ahora - carritoData.timestamp;
+                const UNA_HORA = 60 * 60 * 1000; // 1 hora en milisegundos
+                
+                // Si pasó más de 1 hora, vaciar el carrito
+                if (tiempoTranscurrido > UNA_HORA) {
+                    console.log('⏰ Carrito expirado (más de 1 hora). Vaciando automáticamente...');
+                    carrito = [];
+                    localStorage.removeItem('carritoCell');
+                    localStorage.removeItem('carritoCell_legacy');
+                    
+                    // Mostrar notificación al usuario
+                    if (window.mostrarNotificacion) {
+                        mostrarNotificacion('⏰ Tu carrito expiró después de 1 hora. Stock liberado.', 'warning');
+                    }
+                } else {
+                    carrito = carritoData.productos;
+                    
+                    // Calcular tiempo restante
+                    const tiempoRestante = UNA_HORA - tiempoTranscurrido;
+                    const minutosRestantes = Math.floor(tiempoRestante / (60 * 1000));
+                    console.log(`🕐 Carrito válido. Expira en ${minutosRestantes} minutos.`);
+                }
+            } else {
+                // Formato antiguo (sin timestamp), asignar timestamp actual
+                carrito = Array.isArray(carritoData) ? carritoData : [];
+                guardarCarritoEnStorage(); // Re-guardar con timestamp
+            }
+        } catch (error) {
+            console.error('Error al cargar carrito:', error);
+            carrito = [];
+        }
     }
+    
+    actualizarBadgeCarrito();
 }
 
 /**
