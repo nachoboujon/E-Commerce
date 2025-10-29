@@ -831,9 +831,9 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
         console.log(`🔍 Variantes encontradas para color "${colorSeleccionado}":`, variantesDelColor.length);
         
         // Obtener memorias únicas disponibles para este color
-        const memoriasDisponibles = [...new Set(variantesDelColor.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
+        let memoriasDisponibles = [...new Set(variantesDelColor.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
         
-        console.log(`📋 Memorias disponibles para ${colorSeleccionado}:`, memoriasDisponibles);
+        console.log(`📋 Memorias filtradas para "${colorSeleccionado}":`, memoriasDisponibles);
         
         // ✅ VALIDACIÓN: Si no hay memorias filtradas, restaurar TODAS las del array base
         if (memoriasDisponibles.length === 0) {
@@ -850,6 +850,8 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
                 memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
             }
         }
+        
+        console.log(`📋 Memorias FINALES a mostrar:`, memoriasDisponibles);
         
         // Guardar la memoria actualmente seleccionada
         const memoriaActual = memoriaSelector.value;
@@ -884,9 +886,9 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
         console.log(`🔍 Variantes encontradas para memoria "${memoriaSeleccionada}":`, variantesDeLaMemoria.length);
         
         // Obtener colores únicos disponibles para esta memoria
-        const coloresDisponibles = [...new Set(variantesDeLaMemoria.map(v => v.color).filter(c => c && c.trim() !== ''))];
+        let coloresDisponibles = [...new Set(variantesDeLaMemoria.map(v => v.color).filter(c => c && c.trim() !== ''))];
         
-        console.log(`📋 Colores disponibles para ${memoriaSeleccionada}:`, coloresDisponibles);
+        console.log(`📋 Colores filtrados para "${memoriaSeleccionada}":`, coloresDisponibles);
         
         // ✅ VALIDACIÓN: Si no hay colores filtrados, restaurar TODOS los del array base
         if (coloresDisponibles.length === 0) {
@@ -903,6 +905,8 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
                 coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c && c.trim() !== ''))];
             }
         }
+        
+        console.log(`📋 Colores FINALES a mostrar:`, coloresDisponibles);
         
         // Guardar el color actualmente seleccionado
         const colorActual = colorSelector.value;
@@ -1315,7 +1319,7 @@ function generarEstrellas(rating) {
 // ============================================================
 
 // Sistema de versiones para forzar actualización de productos
-const VERSION_PRODUCTOS = '6.3'; // ⬆️ Fix: Restaurar arrays base cuando no hay variantes para color/memoria
+const VERSION_PRODUCTOS = '6.4'; // ⬆️ Fix CRÍTICO: let en lugar de const para reasignar arrays
 const VERSION_KEY = 'versionProductosPhoneSpot';
 
 // Verificar si necesitamos actualizar por nueva versión
