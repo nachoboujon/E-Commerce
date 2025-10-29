@@ -345,10 +345,24 @@ async function verificarConexionAPI() {
 /**
  * Sincronizar productos desde el backend hacia localStorage
  * Útil para modo offline o cache
+ * @param {boolean} forzar - Si es true, sincroniza sin importar historial local
  * @returns {Promise<boolean>}
  */
-async function sincronizarProductosDesdeBackend() {
+async function sincronizarProductosDesdeBackend(forzar = false) {
     try {
+        // ⚠️ IMPORTANTE: Solo sincronizar productos si no hay cambios locales pendientes
+        // Esto evita que se sobrescriban los stocks reducidos por compras offline
+        if (!forzar) {
+            const historialCompras = localStorage.getItem('historialCompras');
+            const hayComprasPendientes = historialCompras && JSON.parse(historialCompras).length > 0;
+            
+            if (hayComprasPendientes) {
+                console.warn('⚠️ Hay compras en historial local - NO sincronizando para preservar stock local');
+                console.warn('💡 Si quieres sincronizar, limpia el historial desde el panel de admin');
+                return false;
+            }
+        }
+        
         const productos = await obtenerProductosAPI();
         
         if (productos && productos.length > 0) {

@@ -134,8 +134,8 @@ async function enviarEmailConfirmacionCompra(orden, usuario) {
                 ${nombreCompleto}
             </td>
             <td style="padding: 15px 10px; text-align: center;">${item.cantidad}</td>
-            <td style="padding: 15px 10px; text-align: right;">$${item.precio.toLocaleString('es-AR')}</td>
-            <td style="padding: 15px 10px; text-align: right;"><strong>$${(item.precio * item.cantidad).toLocaleString('es-AR')}</strong></td>
+            <td style="padding: 15px 10px; text-align: right;">USD $${item.precio.toLocaleString('es-AR')}</td>
+            <td style="padding: 15px 10px; text-align: right;"><strong>USD $${(item.precio * item.cantidad).toLocaleString('es-AR')}</strong></td>
         </tr>
         `;
     }).join('');
@@ -195,6 +195,16 @@ async function enviarEmailConfirmacionCompra(orden, usuario) {
                     </div>
                     
                     <h3>📦 Detalle de tu pedido:</h3>
+                    
+                    ${orden.productos.length < 3 ? `
+                    <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
+                        <p style="margin: 0; font-size: 13px; color: #856404;">
+                            ⚠️ <strong>Compra minorista:</strong> Se aplicó un cargo de $10 USD por producto (menos de 3 productos). 
+                            Compra 3 o más productos para obtener precio mayorista.
+                        </p>
+                    </div>
+                    ` : ''}
+                    
                     <table>
                         <thead>
                             <tr>
@@ -210,7 +220,7 @@ async function enviarEmailConfirmacionCompra(orden, usuario) {
                         <tfoot>
                             <tr class="total-row">
                                 <td colspan="3" style="padding: 15px 10px; text-align: right;">TOTAL:</td>
-                                <td style="padding: 15px 10px; text-align: right;"><strong>$${orden.total.toLocaleString('es-AR')}</strong></td>
+                                <td style="padding: 15px 10px; text-align: right;"><strong>USD $${orden.total.toLocaleString('es-AR')}</strong></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -283,7 +293,8 @@ async function enviarEmailNotificacionAdmin(orden, usuario) {
         <li style="margin-bottom: 15px; padding: 10px; background-color: #ffffff; border-radius: 5px;">
             ${detallesProducto}
             <br><span style="color: #333;">Cantidad: <strong>${item.cantidad}</strong></span>
-            <br><span style="color: #28a745; font-weight: bold;">Precio: $${(item.precio * item.cantidad).toLocaleString('es-AR')}</span>
+            <br><span style="color: #333;">Precio unitario: <strong>USD $${item.precio.toLocaleString('es-AR')}</strong></span>
+            <br><span style="color: #28a745; font-weight: bold;">Subtotal: USD $${(item.precio * item.cantidad).toLocaleString('es-AR')}</span>
         </li>
         `;
     }).join('');
@@ -345,6 +356,15 @@ async function enviarEmailNotificacionAdmin(orden, usuario) {
                     </div>
                     
                     <h3>📦 Productos del Pedido:</h3>
+                    
+                    ${orden.productos.length < 3 ? `
+                    <div class="alert-box">
+                        <p style="margin: 0; font-size: 13px;">
+                            ⚠️ <strong>Compra minorista:</strong> Se aplicó cargo de $10 USD por producto (menos de 3 productos)
+                        </p>
+                    </div>
+                    ` : ''}
+                    
                     <ul>
                         ${productosHTML}
                     </ul>

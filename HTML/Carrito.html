@@ -1196,11 +1196,16 @@
                 if (usarBackend) {
                     console.log('🔄 Procesando compra con backend (MongoDB)...');
                     
+                    // ✨ CALCULAR PRECIO CON CARGO MAYORISTA POR PRODUCTO
+                    const precioConCargoMayorista = totalProductos < 3 ? 10 : 0; // +$10 si es compra minorista
+                    
                     // Preparar datos de la orden para el backend
                     const ordenData = {
                         productos: carrito.map(item => ({
                             productoId: item.id,
                             cantidad: item.cantidad,
+                            // Incluir precio con cargo mayorista si aplica
+                            precioUnitario: item.precio + precioConCargoMayorista,
                             // Incluir variantes del producto (color, memoria, etc.)
                             color: item.varianteSeleccionada?.color || item.color || null,
                             memoria: item.varianteSeleccionada?.memoria || item.memoria || null
@@ -1209,6 +1214,7 @@
                         metodoEnvio: metodoEnvio,
                         costoEnvio: costoEnvio,
                         direccionEnvio: direccionCompletaEnvio,
+                        cargoMayorista: cargoMayorista, // Enviar el cargo mayorista total
                         notas: `Compra desde PhoneSpot - ${new Date().toLocaleString()}`
                     };
                     
@@ -1239,11 +1245,17 @@
                             localStorage.removeItem('carritoCell');
                             localStorage.removeItem('carritoCell_legacy');
                             
-                            // Sincronizar productos actualizados
-                            APIService.sincronizarProductos();
-                            
-                            // Redirigir al inicio
-                            window.location.href = '../index.html';
+                            // ✅ FORZAR sincronización desde MongoDB
+                            // (el backend ya redujo el stock al crear la orden, traer el stock actualizado)
+                            APIService.sincronizarProductos(true).then(() => {
+                                console.log('✅ Stock sincronizado desde MongoDB después de la compra');
+                                // Redirigir al inicio después de sincronizar
+                                window.location.href = '../index.html';
+                            }).catch(() => {
+                                // Si falla la sincronización, redirigir igual
+                                console.warn('⚠️ No se pudo sincronizar productos, continuando...');
+                                window.location.href = '../index.html';
+                            });
                         })
                         .catch(error => {
                             console.error('❌ Error al crear orden en backend:', error);
@@ -1276,6 +1288,10 @@
                         // Vaciar carrito completamente
                         localStorage.removeItem('carritoCell');
                         localStorage.removeItem('carritoCell_legacy');
+                        
+                        // ⚠️ NO sincronizar desde backend en modo offline
+                        // El stock ya fue reducido en localStorage por Productos.procesarCompra()
+                        console.log('✅ Compra procesada en modo offline - Stock reducido en localStorage');
                         
                         // Redirigir al inicio
                         window.location.href = '../index.html';

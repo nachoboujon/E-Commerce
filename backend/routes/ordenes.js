@@ -17,7 +17,7 @@ const {
 // ============================================================
 router.post('/', verificarToken, async (req, res) => {
     try {
-        const { productos, metodoPago, metodoEnvio, costoEnvio, direccionEnvio, notas } = req.body;
+        const { productos, metodoPago, metodoEnvio, costoEnvio, direccionEnvio, notas, cargoMayorista } = req.body;
         
         if (!productos || productos.length === 0) {
             return res.status(400).json({
@@ -25,6 +25,9 @@ router.post('/', verificarToken, async (req, res) => {
                 message: 'No hay productos en la orden'
             });
         }
+        
+        console.log('📦 Procesando orden con productos:', productos);
+        console.log('💰 Cargo mayorista:', cargoMayorista || 0);
         
         // Validar stock y calcular totales
         let subtotal = 0;
@@ -47,13 +50,17 @@ router.post('/', verificarToken, async (req, res) => {
                 });
             }
             
-            const subtotalItem = producto.precio * item.cantidad;
+            // ✨ USAR PRECIO UNITARIO ENVIADO DESDE EL FRONTEND (incluye cargo mayorista)
+            const precioFinal = item.precioUnitario || producto.precio;
+            const subtotalItem = precioFinal * item.cantidad;
             subtotal += subtotalItem;
+            
+            console.log(`📱 ${producto.nombre} - Precio: $${precioFinal} (original: $${producto.precio}) | Color: ${item.color || 'N/A'} | Memoria: ${item.memoria || 'N/A'}`);
             
             productosValidados.push({
                 productoId: item.productoId,
                 nombre: producto.nombre,
-                precio: producto.precio,
+                precio: precioFinal, // ✅ Usar precio con cargo mayorista incluido
                 cantidad: item.cantidad,
                 subtotal: subtotalItem,
                 // Incluir variantes si vienen del carrito (color, memoria, etc.)
