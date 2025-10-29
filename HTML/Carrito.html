@@ -789,7 +789,9 @@
         // Vaciar todo el carrito
         function vaciarCarrito() {
             if (confirm('¿Estás seguro de vaciar todo el carrito?')) {
+                // Limpiar todas las variantes del carrito
                 localStorage.removeItem('carritoCell');
+                localStorage.removeItem('carritoCell_legacy');
                 cargarCarrito();
                 
                 if (window.mostrarNotificacion) {
@@ -1182,8 +1184,16 @@
                 btnCheckout.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
                 btnCheckout.disabled = true;
                 
-                // Verificar si el backend está disponible
-                if (window.BACKEND_DISPONIBLE && window.APIService) {
+                // ✅ VERIFICAR SI TIENE TOKEN VÁLIDO PARA USAR BACKEND
+                const tieneTokenValido = sesion && sesion.token;
+                const usarBackend = window.BACKEND_DISPONIBLE && window.APIService && tieneTokenValido;
+                
+                if (!tieneTokenValido && window.BACKEND_DISPONIBLE) {
+                    console.warn('⚠️ Backend disponible pero sin token válido - Procesando en modo offline');
+                }
+                
+                // Verificar si el backend está disponible Y tiene token válido
+                if (usarBackend) {
                     console.log('🔄 Procesando compra con backend (MongoDB)...');
                     
                     // Preparar datos de la orden para el backend
@@ -1222,11 +1232,12 @@
                                   `Orden: ${orden.numeroOrden}\n` +
                                   `Gracias por tu compra, ${sesion.nombre}.\n\n` +
                                   `📦 Recibirás un email de confirmación.\n` +
-                                  `💳 Total: USD $${total.toLocaleString()}\n` +
+                                  `💳 Total: USD $${totalProductosUSD.toLocaleString()}\n` +
                                   `📍 Nos contactaremos para coordinar la entrega.`);
                             
-                            // Vaciar carrito
+                            // Vaciar carrito completamente
                             localStorage.removeItem('carritoCell');
+                            localStorage.removeItem('carritoCell_legacy');
                             
                             // Sincronizar productos actualizados
                             APIService.sincronizarProductos();
@@ -1260,10 +1271,11 @@
                         }
                         
                         // Compra exitosa
-                        alert(`✅ ¡Compra realizada con éxito!\n\nGracias por tu compra, ${sesion.nombre}.\n\n📦 Recibirás un email de confirmación.\n💳 Total: USD $${total.toLocaleString()}\n📍 Nos contactaremos para coordinar la entrega.`);
+                        alert(`✅ ¡Compra realizada con éxito!\n\nGracias por tu compra, ${sesion.nombre}.\n\n📦 Recibirás un email de confirmación.\n💳 Total: USD $${totalProductosUSD.toLocaleString()}\n📍 Nos contactaremos para coordinar la entrega.`);
                         
-                        // Vaciar carrito
+                        // Vaciar carrito completamente
                         localStorage.removeItem('carritoCell');
+                        localStorage.removeItem('carritoCell_legacy');
                         
                         // Redirigir al inicio
                         window.location.href = '../index.html';
