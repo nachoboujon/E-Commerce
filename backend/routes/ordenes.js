@@ -19,6 +19,8 @@ router.post('/', verificarToken, async (req, res) => {
     try {
         const { productos, metodoPago, metodoEnvio, costoEnvio, direccionEnvio, notas, cargoMayorista } = req.body;
         
+        console.log('📦 Request completo:', JSON.stringify(req.body, null, 2));
+        
         if (!productos || productos.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -26,7 +28,7 @@ router.post('/', verificarToken, async (req, res) => {
             });
         }
         
-        console.log('📦 Procesando orden con productos:', productos);
+        console.log('📦 Procesando orden con productos:', productos.length, 'items');
         console.log('💰 Cargo mayorista:', cargoMayorista || 0);
         
         // Validar stock y calcular totales
@@ -80,6 +82,17 @@ router.post('/', verificarToken, async (req, res) => {
         const total = subtotal + envio - descuento;
         
         // Crear orden
+        console.log('📝 Creando orden con datos:', {
+            usuario: req.usuario._id,
+            productos: productosValidados.length,
+            subtotal,
+            envio,
+            total,
+            metodoPago: metodoPago || 'pendiente',
+            metodoEnvio: metodoEnvio || 'retiro',
+            costoEnvio: costoEnvio || 0
+        });
+        
         const nuevaOrden = new Orden({
             usuario: req.usuario._id,
             productos: productosValidados,
@@ -92,12 +105,12 @@ router.post('/', verificarToken, async (req, res) => {
             costoEnvio: costoEnvio || 0,
             direccionEnvio: direccionEnvio || 'Retiro en tienda',
             datosContacto: {
-                nombre: req.usuario.nombre,
-                email: req.usuario.email,
-                telefono: req.usuario.telefono,
-                direccion: req.usuario.direccion
+                nombre: req.usuario.nombre || 'No especificado',
+                email: req.usuario.email || 'No especificado',
+                telefono: req.usuario.telefono || 'No especificado',
+                direccion: req.usuario.direccion || 'No especificado'
             },
-            notas
+            notas: notas || ''
         });
         
         await nuevaOrden.save();
@@ -121,11 +134,12 @@ router.post('/', verificarToken, async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error al crear orden:', error);
+        console.error('❌ ERROR AL CREAR ORDEN:', error);
+        console.error('Stack:', error.stack);
         res.status(500).json({
             success: false,
-            message: 'Error al crear orden',
-            error: error.message
+            message: error.message || 'Error al crear orden',
+            error: error.toString()
         });
     }
 });
