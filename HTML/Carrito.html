@@ -695,6 +695,21 @@
                 return;
             }
             
+            // ✅ VALIDAR QUE TENGA TOKEN JWT (necesario para crear órdenes en el backend)
+            if (!sesion.token && window.BACKEND_DISPONIBLE) {
+                console.warn('⚠️ Sesión sin token JWT detectada');
+                if (confirm('Tu sesión expiró. Por favor, inicia sesión nuevamente para continuar con la compra.')) {
+                    // Cerrar sesión y redirigir al login
+                    Auth.logout();
+                }
+                return;
+            }
+            
+            console.log('🔐 Token JWT presente:', sesion.token ? 'Sí ✅' : 'No (modo offline)');
+            if (sesion.token) {
+                console.log('🔑 Token (primeros 30 chars):', sesion.token.substring(0, 30) + '...');
+            }
+            
             const carritoStr = localStorage.getItem('carritoCell');
             const carrito = carritoStr ? JSON.parse(carritoStr) : [];
             

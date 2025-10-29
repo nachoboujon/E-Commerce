@@ -134,11 +134,14 @@ async function login(identificador, password) {
             console.log('🔍 data.token:', data.token);
             console.log('🔍 data.success:', data.success);
             
+            // ✅ IMPORTANTE: El backend devuelve el token directamente en data.token
             tokenJWT = data.token;
             console.log('✅ Token JWT obtenido del backend:', tokenJWT ? 'Sí ✅' : 'No ❌');
-            console.log('🔑 Token completo:', tokenJWT);
             
-            if (!tokenJWT) {
+            if (tokenJWT) {
+                console.log('🔑 Token (primeros 50 chars):', tokenJWT.substring(0, 50) + '...');
+                console.log('📏 Longitud del token:', tokenJWT.length);
+            } else {
                 console.error('⚠️ ADVERTENCIA: El backend respondió OK pero NO devolvió token');
                 console.error('⚠️ Estructura de respuesta:', JSON.stringify(data, null, 2));
             }
@@ -150,6 +153,7 @@ async function login(identificador, password) {
     } catch (error) {
         console.error('❌ Error al conectar con backend:', error.message);
         console.error('📍 Stack:', error.stack);
+        console.warn('⚠️ Continuando sin token JWT (modo offline)');
     }
     
     // Guardar sesión en localStorage con token

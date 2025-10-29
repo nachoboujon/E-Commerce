@@ -25,8 +25,8 @@ async function fetchAPI(endpoint, options = {}) {
     
     // 🔍 DEBUG: Log para verificar token
     console.log('🔍 API Request:', endpoint);
-    console.log('👤 Sesión:', sesion);
-    console.log('🔑 Token:', token ? 'Presente ✅' : 'NO presente ❌');
+    console.log('👤 Sesión:', sesion ? `Usuario: ${sesion.username}, Rol: ${sesion.rol}` : 'NO HAY SESIÓN');
+    console.log('🔑 Token:', token ? `Presente ✅ (${token.substring(0, 30)}...)` : 'NO presente ❌');
     
     // Configurar headers
     const headers = {
@@ -36,9 +36,10 @@ async function fetchAPI(endpoint, options = {}) {
     
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        console.log('✅ Token agregado al header Authorization');
+        console.log('✅ Header Authorization configurado correctamente');
     } else {
-        console.warn('⚠️ NO hay token JWT - Las operaciones de admin FALLARÁN');
+        console.warn('⚠️ NO hay token JWT - Las operaciones requieren autenticación');
+        console.warn('⚠️ Si acabas de iniciar sesión, intenta cerrar sesión y volver a entrar');
     }
     
     try {
@@ -51,12 +52,22 @@ async function fetchAPI(endpoint, options = {}) {
         const data = await response.json();
         
         if (!response.ok) {
-            throw new Error(data.message || 'Error en la petición');
+            // Mensaje de error mejorado
+            const errorMsg = data.message || 'Error en la petición';
+            console.error(`❌ Error ${response.status} en ${endpoint}:`, errorMsg);
+            
+            // Si el error es de autenticación, informar al usuario
+            if (response.status === 401 || response.status === 403) {
+                console.error('🔐 Error de autenticación - Token inválido o expirado');
+                throw new Error('No se proporcionó token de autenticación\n\nPor favor, verifica tu conexión e intenta nuevamente.');
+            }
+            
+            throw new Error(errorMsg);
         }
         
         return data;
     } catch (error) {
-        console.error(`Error en ${endpoint}:`, error);
+        console.error(`❌ Error en ${endpoint}:`, error.message);
         throw error;
     }
 }

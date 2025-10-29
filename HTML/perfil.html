@@ -10,6 +10,61 @@
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../Style/responsive.css">
     <style>
+        /* ========== MENÚ HAMBURGUESA (SOLO MÓVIL) ========== */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--crl-black);
+            border: none;
+            border-radius: 8px;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .menu-toggle:hover {
+            background: var(--crl-dark-gray);
+            transform: scale(1.05);
+        }
+
+        .menu-toggle i {
+            color: white;
+            font-size: 22px;
+        }
+
+        /* Mostrar en móvil */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        /* Overlay cuando el menú está abierto */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        
         /* Contenedor principal del perfil */
         .profile-container {
             width: 100%;
@@ -258,9 +313,102 @@
         .back-button:hover {
             color: #000;
         }
+
+        /* ========== RESPONSIVE MÓVIL ========== */
+        @media (max-width: 768px) {
+            main {
+                padding: 80px 15px 30px 15px !important; /* Espacio para el botón hamburguesa */
+            }
+
+            .main-header {
+                margin-bottom: 20px;
+                padding: 20px;
+            }
+
+            .main-header h2 {
+                font-size: 24px;
+            }
+
+            .profile-header {
+                padding: 30px 20px;
+                margin-bottom: 20px;
+            }
+
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 36px;
+            }
+
+            .profile-name {
+                font-size: 22px;
+            }
+
+            .profile-role {
+                font-size: 12px;
+            }
+
+            .profile-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 5px;
+                margin-bottom: 20px;
+            }
+
+            .tab-button {
+                padding: 12px 20px;
+                font-size: 13px;
+                white-space: nowrap;
+            }
+
+            .info-card {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .info-card h3 {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .form-group label {
+                font-size: 12px;
+            }
+
+            .form-group input {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 10px;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Botón hamburguesa (solo móvil) -->
+    <button class="menu-toggle" onclick="toggleMenu()" aria-label="Menú">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Overlay para cerrar menú (solo móvil) -->
+    <div class="mobile-overlay" onclick="toggleMenu()"></div>
+
     <div class="container">
         <!-- Barra lateral -->
         <aside>
@@ -639,6 +787,57 @@
 
         // Cargar perfil al iniciar
         cargarPerfil();
+
+        // ============================================================
+        // MENÚ HAMBURGUESA RESPONSIVE (SOLO MÓVIL)
+        // ============================================================
+        function toggleMenu() {
+            const aside = document.querySelector('aside');
+            const overlay = document.querySelector('.mobile-overlay');
+            const menuToggle = document.querySelector('.menu-toggle');
+            
+            // Toggle clase active
+            aside.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Cambiar icono del botón
+            const icon = menuToggle.querySelector('i');
+            if (aside.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        }
+
+        // Cerrar menú al hacer clic en un link (solo en móvil)
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuLinks = document.querySelectorAll('aside nav a, aside nav button');
+            
+            menuLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        toggleMenu();
+                    }
+                });
+            });
+        });
+
+        // Actualizar badge del carrito
+        function actualizarBadgeCarrito() {
+            const carritoStr = localStorage.getItem('carritoCell');
+            const carrito = carritoStr ? JSON.parse(carritoStr) : [];
+            const totalProductos = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            
+            const badge = document.querySelector('.cart-badge');
+            if (badge) {
+                badge.textContent = totalProductos;
+            }
+        }
+
+        // Actualizar badge al cargar
+        actualizarBadgeCarrito();
     </script>
 </body>
 </html>

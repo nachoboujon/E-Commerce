@@ -58,9 +58,8 @@ router.post('/', verificarToken, async (req, res) => {
                 subtotal: subtotalItem
             });
             
-            // Reducir stock
-            producto.stock -= item.cantidad;
-            await producto.save();
+            // ✅ NO REDUCIR STOCK AQUÍ - Se reducirá cuando se confirme el pago
+            // El stock se actualizará en el endpoint de actualizar estado (línea 219)
         }
         
         // Calcular envío y total
@@ -235,6 +234,51 @@ router.patch('/:id/estado', verificarToken, verificarAdmin, async (req, res) => 
                 success: false,
                 message: 'Orden no encontrada'
             });
+        }
+        
+        const estadoAnterior = orden.estado;
+        
+        // ✅ REDUCIR STOCK CUANDO SE CONFIRMA EL PAGO (procesando)
+        if (estadoAnterior === 'pendiente' && estado === 'procesando') {
+            console.log('💰 Confirmando pago - Reduciendo stock de productos...');
+            
+            for (const item of orden.productos) {
+                const producto = await Producto.findOne({ id: item.productoId });
+                
+                if (!producto) {
+                    return res.status(404).json({
+                        success: false,
+                        message: `Producto ${item.productoId} no encontrado`
+                    });
+                }
+                
+                if (producto.stock < item.cantidad) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Stock insuficiente para ${producto.nombre}. Stock disponible: ${producto.stock}`
+                    });
+                }
+                
+                // Reducir stock
+                producto.stock -= item.cantidad;
+                await producto.save();
+                console.log(`✅ Stock reducido: ${producto.nombre} - Cantidad: ${item.cantidad} - Stock restante: ${producto.stock}`);
+            }
+        }
+        
+        // ✅ DEVOLVER STOCK SI SE CANCELA LA ORDEN
+        if (estado === 'cancelado' && estadoAnterior === 'procesando') {
+            console.log('❌ Orden cancelada - Devolviendo stock de productos...');
+            
+            for (const item of orden.productos) {
+                const producto = await Producto.findOne({ id: item.productoId });
+                
+                if (producto) {
+                    producto.stock += item.cantidad;
+                    await producto.save();
+                    console.log(`↩️ Stock devuelto: ${producto.nombre} - Cantidad: ${item.cantidad} - Stock actual: ${producto.stock}`);
+                }
+            }
         }
         
         orden.estado = estado;
