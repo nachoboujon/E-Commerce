@@ -835,10 +835,20 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
         
         console.log(`📋 Memorias disponibles para ${colorSeleccionado}:`, memoriasDisponibles);
         
-        // ✅ VALIDACIÓN: Si no hay memorias filtradas, NO actualizar (mantener opciones originales)
+        // ✅ VALIDACIÓN: Si no hay memorias filtradas, restaurar TODAS las del array base
         if (memoriasDisponibles.length === 0) {
-            console.log(`⚠️ No se encontraron memorias para el color "${colorSeleccionado}", manteniendo opciones originales`);
-            return;
+            console.log(`⚠️ No hay variantes para el color "${colorSeleccionado}"`);
+            
+            // Restaurar todas las memorias del array base del producto
+            const memoriasBase = producto.memorias || [];
+            
+            if (memoriasBase.length > 0) {
+                console.log(`🔄 Restaurando memorias del array base:`, memoriasBase);
+                memoriasDisponibles = memoriasBase;
+            } else {
+                console.log(`⚠️ No hay memorias base, extrayendo de todas las variantes`);
+                memoriasDisponibles = [...new Set(producto.variantes.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
+            }
         }
         
         // Guardar la memoria actualmente seleccionada
@@ -878,10 +888,20 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
         
         console.log(`📋 Colores disponibles para ${memoriaSeleccionada}:`, coloresDisponibles);
         
-        // ✅ VALIDACIÓN: Si no hay colores filtrados, NO actualizar (mantener opciones originales)
+        // ✅ VALIDACIÓN: Si no hay colores filtrados, restaurar TODOS los del array base
         if (coloresDisponibles.length === 0) {
-            console.log(`⚠️ No se encontraron colores para la memoria "${memoriaSeleccionada}", manteniendo opciones originales`);
-            return;
+            console.log(`⚠️ No hay variantes para la memoria "${memoriaSeleccionada}"`);
+            
+            // Restaurar todos los colores del array base del producto
+            const coloresBase = producto.colores || [];
+            
+            if (coloresBase.length > 0) {
+                console.log(`🔄 Restaurando colores del array base:`, coloresBase);
+                coloresDisponibles = coloresBase;
+            } else {
+                console.log(`⚠️ No hay colores base, extrayendo de todas las variantes`);
+                coloresDisponibles = [...new Set(producto.variantes.map(v => v.color).filter(c => c && c.trim() !== ''))];
+            }
         }
         
         // Guardar el color actualmente seleccionado
@@ -1295,7 +1315,7 @@ function generarEstrellas(rating) {
 // ============================================================
 
 // Sistema de versiones para forzar actualización de productos
-const VERSION_PRODUCTOS = '6.2'; // ⬆️ Fix: trim() en comparaciones + logs detallados de filtrado
+const VERSION_PRODUCTOS = '6.3'; // ⬆️ Fix: Restaurar arrays base cuando no hay variantes para color/memoria
 const VERSION_KEY = 'versionProductosPhoneSpot';
 
 // Verificar si necesitamos actualizar por nueva versión
