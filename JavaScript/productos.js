@@ -817,14 +817,21 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
     
     // Si cambió el color, actualizar las opciones de memoria disponibles
     if (selectorCambiado === 'color' && colorSelector && memoriaSelector) {
-        const colorSeleccionado = colorSelector.value;
-        console.log(`🎨 Color seleccionado: ${colorSeleccionado}`);
+        const colorSeleccionado = colorSelector.value.trim();
+        console.log(`🎨 Color seleccionado: "${colorSeleccionado}"`);
         
-        // Filtrar variantes que coincidan con el color seleccionado
-        const variantesDelColor = producto.variantes.filter(v => v.color === colorSeleccionado);
+        // Filtrar variantes que coincidan con el color seleccionado (con trim)
+        const variantesDelColor = producto.variantes.filter(v => {
+            const colorVariante = v.color ? v.color.trim() : '';
+            const coincide = colorVariante === colorSeleccionado;
+            console.log(`  Comparando: "${colorVariante}" === "${colorSeleccionado}" → ${coincide}`);
+            return coincide;
+        });
+        
+        console.log(`🔍 Variantes encontradas para color "${colorSeleccionado}":`, variantesDelColor.length);
         
         // Obtener memorias únicas disponibles para este color
-        const memoriasDisponibles = [...new Set(variantesDelColor.map(v => v.memoria).filter(m => m))];
+        const memoriasDisponibles = [...new Set(variantesDelColor.map(v => v.memoria).filter(m => m && m.trim() !== ''))];
         
         console.log(`📋 Memorias disponibles para ${colorSeleccionado}:`, memoriasDisponibles);
         
@@ -853,14 +860,21 @@ function actualizarSelectoresDinamicos(productoId, selectorCambiado = 'color') {
     
     // Si cambió la memoria, actualizar las opciones de color disponibles
     if (selectorCambiado === 'memoria' && colorSelector && memoriaSelector) {
-        const memoriaSeleccionada = memoriaSelector.value;
-        console.log(`💾 Memoria seleccionada: ${memoriaSeleccionada}`);
+        const memoriaSeleccionada = memoriaSelector.value.trim();
+        console.log(`💾 Memoria seleccionada: "${memoriaSeleccionada}"`);
         
-        // Filtrar variantes que coincidan con la memoria seleccionada
-        const variantesDeLaMemoria = producto.variantes.filter(v => v.memoria === memoriaSeleccionada);
+        // Filtrar variantes que coincidan con la memoria seleccionada (con trim)
+        const variantesDeLaMemoria = producto.variantes.filter(v => {
+            const memoriaVariante = v.memoria ? v.memoria.trim() : '';
+            const coincide = memoriaVariante === memoriaSeleccionada;
+            console.log(`  Comparando: "${memoriaVariante}" === "${memoriaSeleccionada}" → ${coincide}`);
+            return coincide;
+        });
+        
+        console.log(`🔍 Variantes encontradas para memoria "${memoriaSeleccionada}":`, variantesDeLaMemoria.length);
         
         // Obtener colores únicos disponibles para esta memoria
-        const coloresDisponibles = [...new Set(variantesDeLaMemoria.map(v => v.color).filter(c => c))];
+        const coloresDisponibles = [...new Set(variantesDeLaMemoria.map(v => v.color).filter(c => c && c.trim() !== ''))];
         
         console.log(`📋 Colores disponibles para ${memoriaSeleccionada}:`, coloresDisponibles);
         
@@ -1281,7 +1295,7 @@ function generarEstrellas(rating) {
 // ============================================================
 
 // Sistema de versiones para forzar actualización de productos
-const VERSION_PRODUCTOS = '6.1'; // ⬆️ Incrementada: filtrado dinámico inicial + validación mejorada
+const VERSION_PRODUCTOS = '6.2'; // ⬆️ Fix: trim() en comparaciones + logs detallados de filtrado
 const VERSION_KEY = 'versionProductosPhoneSpot';
 
 // Verificar si necesitamos actualizar por nueva versión
