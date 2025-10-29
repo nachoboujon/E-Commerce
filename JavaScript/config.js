@@ -19,21 +19,24 @@ function detectarEntorno() {
     return 'production';
 }
 
+// ⚙️ URL del backend en Railway (compartida entre producción y desarrollo)
+const RAILWAY_BACKEND_URL = 'https://phonespot-backend-production.up.railway.app/api';
+
+// 🔧 MODO DE DESARROLLO: Cambia esto para elegir qué backend usar en localhost
+// true = usar Railway (verás compras de producción)
+// false = usar localhost:3000 (solo desarrollo local)
+const USE_RAILWAY_IN_DEV = true; // ✅ Cambiar a false si quieres desarrollo local aislado
+
 // Configuración por entorno
 const CONFIG = {
     development: {
-        BACKEND_URL: 'http://localhost:3000/api',
+        BACKEND_URL: USE_RAILWAY_IN_DEV ? RAILWAY_BACKEND_URL : 'http://localhost:3000/api',
         USE_LOCAL_STORAGE: false,
         DEBUG: true
     },
     production: {
-        // 🔥 IMPORTANTE: Reemplaza esta URL con la URL de tu backend desplegado
-        // Ejemplos:
-        // - Render: 'https://phonespot-backend.onrender.com/api'
-        // - Railway: 'https://phonespot-backend.up.railway.app/api'
-        // - Heroku: 'https://phonespot-backend.herokuapp.com/api'
-        BACKEND_URL: process.env.BACKEND_URL || null, // Si no hay backend, usa localStorage
-        USE_LOCAL_STORAGE: true, // Usar localStorage como fallback
+        BACKEND_URL: RAILWAY_BACKEND_URL, // ✅ Siempre usa Railway en producción
+        USE_LOCAL_STORAGE: true, // Usar localStorage como fallback si Railway falla
         DEBUG: false
     }
 };
@@ -48,11 +51,21 @@ window.BACKEND_URL = APP_CONFIG.BACKEND_URL;
 window.USE_LOCAL_STORAGE_FALLBACK = APP_CONFIG.USE_LOCAL_STORAGE;
 
 // Log de configuración
-if (APP_CONFIG.DEBUG) {
-    console.log('🔧 Configuración cargada:');
-    console.log('  - Entorno:', ENTORNO_ACTUAL);
-    console.log('  - Backend URL:', APP_CONFIG.BACKEND_URL || 'No configurado (modo offline)');
-    console.log('  - Usar localStorage:', APP_CONFIG.USE_LOCAL_STORAGE);
+console.log('%c🔧 CONFIGURACIÓN DE PHONESPOT', 'color: #0066cc; font-size: 14px; font-weight: bold;');
+console.log('  📍 Entorno:', ENTORNO_ACTUAL);
+console.log('  🔗 Backend URL:', APP_CONFIG.BACKEND_URL || 'No configurado (modo offline)');
+console.log('  💾 Usar localStorage como fallback:', APP_CONFIG.USE_LOCAL_STORAGE);
+
+if (ENTORNO_ACTUAL === 'development') {
+    if (USE_RAILWAY_IN_DEV) {
+        console.log('%c  ✅ LOCALHOST conectado a RAILWAY (verás compras de producción)', 'color: #4caf50; font-weight: bold;');
+    } else {
+        console.log('%c  🔧 LOCALHOST usando backend local (desarrollo aislado)', 'color: #ff9800; font-weight: bold;');
+    }
+}
+
+if (ENTORNO_ACTUAL === 'production') {
+    console.log('%c  🚀 PRODUCCIÓN conectada a RAILWAY', 'color: #4caf50; font-weight: bold;');
 }
 
 // ============================================================

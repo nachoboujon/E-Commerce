@@ -379,6 +379,19 @@
                     <i class="fas fa-arrow-left"></i> Volver a la tienda
                 </a>
             </div>
+            
+            <!-- Mensaje de error de carrito (por si hay problemas) -->
+            <div id="carritoError" class="carrito-vacio" style="display: none;">
+                <i class="fas fa-exclamation-triangle" style="color: #ff4444;"></i>
+                <h3>Hubo un problema al cargar el carrito</h3>
+                <p>Por favor, intenta limpiar el caché del carrito</p>
+                <button onclick="resetearCarritoEmergencia()" style="padding: 12px 24px; background: #ff4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; margin-top: 15px;">
+                    <i class="fas fa-sync-alt"></i> Limpiar y Reiniciar Carrito
+                </button>
+                <a href="../index.html" class="btn-volver" style="margin-top: 15px;">
+                    <i class="fas fa-arrow-left"></i> Volver a la tienda
+                </a>
+            </div>
 
             <!-- Carrito con productos -->
             <div id="carritoContenido" class="carrito-contenido" style="display: none;">
@@ -408,24 +421,54 @@
                         <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #000;">
                             <i class="fas fa-truck"></i> Método de Envío
                         </label>
-                        <select id="metodo-envio" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-weight: 500;" onchange="calcularTotalesConEnvio()">
+                        <select id="metodo-envio" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-weight: 500;" onchange="toggleDireccionEnvio()">
                             <option value="retiro">🏪 Retiro en tienda - GRATIS</option>
-                            <option value="envio-10km">🚚 Envío hasta 10km - ARS $3.000</option>
-                            <option value="envio-40km">🚛 Envío 10-40km - ARS $5.000</option>
+                            <option value="envio">🚚 Envío a domicilio - Calculamos el costo</option>
                         </select>
                     </div>
 
-                    <!-- 📍 DIRECCIÓN DE ENVÍO (solo si selecciona envío) -->
+                    <!-- 📍 DATOS DE ENVÍO (solo si selecciona envío) -->
                     <div id="direccion-envio-container" style="display: none; margin-bottom: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #0066cc;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #000;">
-                            <i class="fas fa-map-marker-alt"></i> Dirección de Envío *
-                        </label>
-                        <textarea id="direccion-envio" 
-                                  rows="3" 
-                                  placeholder="Ingresa tu dirección completa (calle, número, barrio, ciudad)"
-                                  style="width: 100%; padding: 12px; border: 2px solid #0066cc; border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
-                        <small style="color: #666; font-size: 12px;">
-                            <i class="fas fa-info-circle"></i> Asegúrate de incluir todos los detalles para una entrega exitosa
+                        <h4 style="margin: 0 0 15px 0; color: #0066cc; font-size: 16px;">
+                            <i class="fas fa-map-marker-alt"></i> Datos de Envío
+                        </h4>
+                        
+                        <!-- Ciudad -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #000; font-size: 13px;">
+                                Ciudad *
+                            </label>
+                            <input type="text" id="ciudad-envio" placeholder="Ej: San José" style="width: 100%; padding: 10px; border: 2px solid #0066cc; border-radius: 6px; font-size: 14px;" oninput="calcularDistanciaYCosto()">
+                        </div>
+                        
+                        <!-- Código Postal -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #000; font-size: 13px;">
+                                Código Postal *
+                            </label>
+                            <input type="text" id="codigo-postal" placeholder="Ej: 3283" maxlength="4" style="width: 100%; padding: 10px; border: 2px solid #0066cc; border-radius: 6px; font-size: 14px;" oninput="calcularDistanciaYCosto()">
+                        </div>
+                        
+                        <!-- Dirección completa -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 6px; color: #000; font-size: 13px;">
+                                Dirección completa *
+                            </label>
+                            <textarea id="direccion-envio" rows="2" placeholder="Calle, número, barrio" style="width: 100%; padding: 10px; border: 2px solid #0066cc; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+                        </div>
+                        
+                        <!-- Resultado del cálculo -->
+                        <div id="resultado-distancia" style="display: none; margin-top: 15px; padding: 12px; background: #fff; border-radius: 6px; border: 2px solid #4caf50;">
+                            <p style="margin: 0; color: #2e7d32; font-weight: 600; font-size: 14px;">
+                                <i class="fas fa-check-circle"></i> <span id="texto-distancia"></span>
+                            </p>
+                            <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">
+                                <strong>Costo de envío:</strong> <span id="costo-calculado" style="color: #0066cc; font-weight: 700;"></span>
+                            </p>
+                        </div>
+                        
+                        <small style="color: #666; font-size: 12px; display: block; margin-top: 10px;">
+                            <i class="fas fa-info-circle"></i> Calculamos automáticamente el costo según tu ubicación
                         </small>
                     </div>
 
@@ -529,15 +572,20 @@
 
         // Cargar productos del carrito
         function cargarCarrito() {
+            console.log('🔄 Cargando carrito...');
             const carritoStr = localStorage.getItem('carritoCell');
+            console.log('📦 Carrito raw:', carritoStr ? carritoStr.substring(0, 100) + '...' : 'null');
+            
             let carrito = [];
             
             if (carritoStr) {
                 try {
                     const carritoData = JSON.parse(carritoStr);
+                    console.log('📊 Carrito parseado:', carritoData);
                     
                     // Verificar si tiene el formato nuevo con timestamp
                     if (carritoData.timestamp && carritoData.productos) {
+                        console.log('✅ Formato nuevo detectado (con timestamp)');
                         const ahora = new Date().getTime();
                         const tiempoTranscurrido = ahora - carritoData.timestamp;
                         const UNA_HORA = 60 * 60 * 1000; // 1 hora en milisegundos
@@ -553,15 +601,18 @@
                             alert('⏰ Tu carrito expiró después de 1 hora.\n\nEl stock ha sido liberado para otros clientes.\n\nPuedes volver a agregar productos si lo deseas.');
                         } else {
                             carrito = carritoData.productos;
+                            console.log(`🛒 ${carrito.length} productos en el carrito`);
                             
                             // Mostrar tiempo restante en consola
                             const tiempoRestante = UNA_HORA - tiempoTranscurrido;
                             const minutosRestantes = Math.floor(tiempoRestante / (60 * 1000));
                             console.log(`🕐 Carrito válido. Expira en ${minutosRestantes} minutos.`);
                         }
-                    } else {
-                        // Formato antiguo (sin timestamp)
-                        carrito = Array.isArray(carritoData) ? carritoData : [];
+                    } else if (Array.isArray(carritoData)) {
+                        // Formato antiguo (array directo)
+                        console.log('⚠️ Formato antiguo detectado (array directo)');
+                        carrito = carritoData;
+                        console.log(`🛒 ${carrito.length} productos encontrados`);
                         
                         // Re-guardar con timestamp
                         const carritoConTimestamp = {
@@ -569,21 +620,38 @@
                             timestamp: new Date().getTime()
                         };
                         localStorage.setItem('carritoCell', JSON.stringify(carritoConTimestamp));
+                        console.log('✅ Carrito convertido al nuevo formato');
+                    } else {
+                        console.warn('⚠️ Formato de carrito no reconocido:', carritoData);
+                        carrito = [];
                     }
                 } catch (error) {
-                    console.error('Error al cargar carrito:', error);
+                    console.error('❌ Error al cargar carrito:', error);
                     carrito = [];
                 }
+            } else {
+                console.log('ℹ️ No hay carrito guardado en localStorage');
             }
             
+            console.log(`📋 Total productos a mostrar: ${carrito.length}`);
             actualizarBadgeCarrito();
 
+            const carritoVacio = document.getElementById('carritoVacio');
+            const carritoContenido = document.getElementById('carritoContenido');
+            
+            console.log('🎯 Elementos DOM:', {
+                carritoVacio: carritoVacio ? 'existe' : 'NO existe',
+                carritoContenido: carritoContenido ? 'existe' : 'NO existe'
+            });
+
             if (carrito.length === 0) {
-                document.getElementById('carritoVacio').style.display = 'block';
-                document.getElementById('carritoContenido').style.display = 'none';
+                console.log('📭 Mostrando carrito vacío');
+                if (carritoVacio) carritoVacio.style.display = 'block';
+                if (carritoContenido) carritoContenido.style.display = 'none';
             } else {
-                document.getElementById('carritoVacio').style.display = 'none';
-                document.getElementById('carritoContenido').style.display = 'grid';
+                console.log('🛍️ Mostrando productos del carrito');
+                if (carritoVacio) carritoVacio.style.display = 'none';
+                if (carritoContenido) carritoContenido.style.display = 'grid';
                 renderizarCarrito(carrito);
                 calcularTotales(carrito);
             }
@@ -754,6 +822,136 @@
             window.dispatchEvent(evento);
         }
 
+        /**
+         * 📍 Base de datos de distancias desde San José, Entre Ríos
+         * Ciudades y códigos postales de la región
+         */
+        const distanciasEnvio = {
+            // San José y alrededores - GRATIS
+            'san jose': { distancia: 0, zona: 'gratis' },
+            'san josé': { distancia: 0, zona: 'gratis' },
+            '3283': { distancia: 0, zona: 'gratis' },
+            
+            // Hasta 10km - ARS $3.000
+            'colon': { distancia: 8, zona: 'cercana' },
+            'colón': { distancia: 8, zona: 'cercana' },
+            '3280': { distancia: 8, zona: 'cercana' },
+            'villa elisa': { distancia: 10, zona: 'cercana' },
+            '3265': { distancia: 10, zona: 'cercana' },
+            
+            // 10-40km - ARS $5.000
+            'villaguay': { distancia: 25, zona: 'media' },
+            '3240': { distancia: 25, zona: 'media' },
+            'concepcion del uruguay': { distancia: 30, zona: 'media' },
+            'concepción del uruguay': { distancia: 30, zona: 'media' },
+            '3260': { distancia: 30, zona: 'media' },
+            'concordia': { distancia: 35, zona: 'media' },
+            '3200': { distancia: 35, zona: 'media' },
+            'gualeguaychu': { distancia: 38, zona: 'media' },
+            'gualeguaychú': { distancia: 38, zona: 'media' },
+            '2820': { distancia: 38, zona: 'media' },
+            
+            // Más de 40km - ARS $8.000
+            'parana': { distancia: 55, zona: 'lejana' },
+            'paraná': { distancia: 55, zona: 'lejana' },
+            '3100': { distancia: 55, zona: 'lejana' },
+            'federacion': { distancia: 70, zona: 'lejana' },
+            'federación': { distancia: 70, zona: 'lejana' },
+            '3206': { distancia: 70, zona: 'lejana' },
+            'victoria': { distancia: 75, zona: 'lejana' },
+            '3153': { distancia: 75, zona: 'lejana' },
+            'la paz': { distancia: 65, zona: 'lejana' },
+            '3190': { distancia: 65, zona: 'lejana' }
+        };
+        
+        /**
+         * 🚚 Toggle mostrar/ocultar formulario de envío
+         */
+        function toggleDireccionEnvio() {
+            const metodoEnvio = document.getElementById('metodo-envio').value;
+            const direccionEnvioContainer = document.getElementById('direccion-envio-container');
+            const direccionRetiroInfo = document.getElementById('direccion-retiro-info');
+            
+            if (metodoEnvio === 'envio') {
+                direccionEnvioContainer.style.display = 'block';
+                direccionRetiroInfo.style.display = 'none';
+            } else {
+                direccionEnvioContainer.style.display = 'none';
+                direccionRetiroInfo.style.display = 'block';
+            }
+            
+            calcularTotalesConEnvio();
+        }
+        
+        /**
+         * 📏 Calcular distancia y costo de envío según ciudad/CP
+         */
+        function calcularDistanciaYCosto() {
+            const ciudad = document.getElementById('ciudad-envio').value.trim().toLowerCase();
+            const codigoPostal = document.getElementById('codigo-postal').value.trim();
+            const resultadoDiv = document.getElementById('resultado-distancia');
+            const textoDistancia = document.getElementById('texto-distancia');
+            const costoCalculado = document.getElementById('costo-calculado');
+            
+            // Resetear si está vacío
+            if (!ciudad && !codigoPostal) {
+                resultadoDiv.style.display = 'none';
+                calcularTotalesConEnvio();
+                return;
+            }
+            
+            // Buscar en la base de datos (primero por CP, luego por ciudad)
+            let infoDistancia = distanciasEnvio[codigoPostal] || distanciasEnvio[ciudad];
+            
+            if (infoDistancia) {
+                const { distancia, zona } = infoDistancia;
+                let costo = 0;
+                let textoZona = '';
+                let colorBorde = '#4caf50';
+                
+                if (zona === 'gratis') {
+                    costo = 0;
+                    textoZona = 'Ubicación local - Envío GRATIS';
+                    colorBorde = '#4caf50';
+                } else if (zona === 'cercana') {
+                    costo = 3000;
+                    textoZona = `Distancia: ~${distancia}km (zona cercana)`;
+                    colorBorde = '#2196f3';
+                } else if (zona === 'media') {
+                    costo = 5000;
+                    textoZona = `Distancia: ~${distancia}km (zona media)`;
+                    colorBorde = '#ff9800';
+                } else if (zona === 'lejana') {
+                    costo = 8000;
+                    textoZona = `Distancia: ~${distancia}km (zona lejana +40km)`;
+                    colorBorde = '#f44336';
+                }
+                
+                // Mostrar resultado
+                textoDistancia.textContent = textoZona;
+                costoCalculado.textContent = costo === 0 ? 'GRATIS 🎁' : `ARS $${costo.toLocaleString()}`;
+                resultadoDiv.style.borderColor = colorBorde;
+                resultadoDiv.style.display = 'block';
+                
+                // Guardar el costo calculado para usarlo en el total
+                window.costoEnvioCalculado = costo;
+                
+                console.log(`📏 Distancia calculada: ${distancia}km | Zona: ${zona} | Costo: ARS $${costo}`);
+            } else {
+                // No encontrado - asumir zona lejana por defecto (por seguridad)
+                textoDistancia.textContent = 'No encontramos tu ubicación exacta';
+                costoCalculado.textContent = 'ARS $8.000 (zona lejana)';
+                resultadoDiv.style.borderColor = '#f44336';
+                resultadoDiv.style.display = 'block';
+                window.costoEnvioCalculado = 8000;
+                
+                console.log('⚠️ Ubicación no encontrada - usando zona lejana por defecto');
+            }
+            
+            // Recalcular totales
+            calcularTotalesConEnvio();
+        }
+        
         // Calcular totales con envío
         function calcularTotalesConEnvio() {
             const carritoStr = localStorage.getItem('carritoCell');
@@ -779,10 +977,8 @@
                 subtotal += cargoMayorista;
             }
             
-            // 📦 CÁLCULO DE ENVÍO SEGÚN MÉTODO SELECCIONADO
+            // 📦 CÁLCULO DE ENVÍO SEGÚN MÉTODO SELECCIONADO Y UBICACIÓN
             const metodoEnvio = document.getElementById('metodo-envio').value;
-            const direccionEnvioContainer = document.getElementById('direccion-envio-container');
-            const direccionRetiroInfo = document.getElementById('direccion-retiro-info');
             
             let costoEnvio = 0;
             let textoEnvio = 'GRATIS';
@@ -790,27 +986,24 @@
             if (metodoEnvio === 'retiro') {
                 costoEnvio = 0;
                 textoEnvio = 'GRATIS';
-                direccionEnvioContainer.style.display = 'none';
-                direccionRetiroInfo.style.display = 'block';
-            } else if (metodoEnvio === 'envio-10km') {
-                costoEnvio = 3000;
-                textoEnvio = 'ARS $3.000';
-                direccionEnvioContainer.style.display = 'block';
-                direccionRetiroInfo.style.display = 'none';
-            } else if (metodoEnvio === 'envio-40km') {
-                costoEnvio = 5000;
-                textoEnvio = 'ARS $5.000';
-                direccionEnvioContainer.style.display = 'block';
-                direccionRetiroInfo.style.display = 'none';
+            } else if (metodoEnvio === 'envio') {
+                // Usar el costo calculado dinámicamente (si existe)
+                costoEnvio = window.costoEnvioCalculado || 0;
+                
+                if (costoEnvio === 0) {
+                    textoEnvio = 'GRATIS 🎁';
+                } else {
+                    textoEnvio = `ARS $${costoEnvio.toLocaleString()}`;
+                }
             }
             
             const descuento = 0;
-            const totalProductos = subtotal - descuento; // Total solo de productos en USD
+            const totalFinal = subtotal - descuento; // Total solo de productos en USD
             
             document.getElementById('subtotal').textContent = 'USD $' + subtotal.toLocaleString();
             document.getElementById('envio').textContent = textoEnvio;
             document.getElementById('descuento').textContent = '-USD $' + descuento.toLocaleString();
-            document.getElementById('total').textContent = 'USD $' + totalProductos.toLocaleString();
+            document.getElementById('total').textContent = 'USD $' + totalFinal.toLocaleString();
             
             // ⚠️ Mostrar advertencia si hay cargo mayorista
             const advertenciaMayorista = document.getElementById('advertencia-mayorista');
@@ -897,13 +1090,27 @@
             
             // Validar método de envío y dirección
             const metodoEnvio = document.getElementById('metodo-envio').value;
+            const ciudadEnvio = document.getElementById('ciudad-envio')?.value.trim() || '';
+            const codigoPostal = document.getElementById('codigo-postal')?.value.trim() || '';
             const direccionEnvio = document.getElementById('direccion-envio').value.trim();
             
-            // Si es envío, validar que haya dirección
-            if (metodoEnvio !== 'retiro' && !direccionEnvio) {
-                alert('⚠️ Por favor, ingresa tu dirección de envío para continuar con la compra.');
-                document.getElementById('direccion-envio').focus();
-                return;
+            // Si es envío, validar que haya todos los datos necesarios
+            if (metodoEnvio === 'envio') {
+                if (!ciudadEnvio) {
+                    alert('⚠️ Por favor, ingresa la ciudad de envío.');
+                    document.getElementById('ciudad-envio').focus();
+                    return;
+                }
+                if (!codigoPostal) {
+                    alert('⚠️ Por favor, ingresa el código postal.');
+                    document.getElementById('codigo-postal').focus();
+                    return;
+                }
+                if (!direccionEnvio) {
+                    alert('⚠️ Por favor, ingresa tu dirección completa (calle, número, barrio).');
+                    document.getElementById('direccion-envio').focus();
+                    return;
+                }
             }
             
             // Calcular totales con lógica de mayorista y envío
@@ -929,16 +1136,17 @@
             // 📦 CALCULAR COSTO DE ENVÍO
             let costoEnvio = 0;
             let textoMetodoEnvio = '';
+            let direccionCompletaEnvio = '';
             
             if (metodoEnvio === 'retiro') {
                 costoEnvio = 0;
                 textoMetodoEnvio = 'Retiro en tienda';
-            } else if (metodoEnvio === 'envio-10km') {
-                costoEnvio = 3000;
-                textoMetodoEnvio = 'Envío hasta 10km';
-            } else if (metodoEnvio === 'envio-40km') {
-                costoEnvio = 5000;
-                textoMetodoEnvio = 'Envío 10-40km';
+                direccionCompletaEnvio = 'Retiro en tienda - Moreno 840, San José, Entre Ríos';
+            } else if (metodoEnvio === 'envio') {
+                // Usar el costo calculado dinámicamente
+                costoEnvio = window.costoEnvioCalculado || 0;
+                textoMetodoEnvio = 'Envío a domicilio';
+                direccionCompletaEnvio = `${direccionEnvio}, ${ciudadEnvio}, CP ${codigoPostal}`;
             }
             
             const totalProductosUSD = subtotal; // Total solo de productos en USD
@@ -953,7 +1161,7 @@
             const textoEnvio = costoEnvio === 0 ? 'GRATIS 🎁' : `ARS $${costoEnvio.toLocaleString()}`;
             const textoDestino = metodoEnvio === 'retiro' 
                 ? '\n📍 Retiro en: Moreno 840, San José, Entre Ríos\n'
-                : `\n📍 Envío a: ${direccionEnvio}\n`;
+                : `\n📍 Envío a: ${direccionCompletaEnvio}\n`;
             
             const confirmacion = confirm(
                 `Resumen de compra:\n\n` +
@@ -990,7 +1198,7 @@
                         metodoPago: 'pendiente',
                         metodoEnvio: metodoEnvio,
                         costoEnvio: costoEnvio,
-                        direccionEnvio: metodoEnvio === 'retiro' ? 'Retiro en tienda - Moreno 840, San José, Entre Ríos' : direccionEnvio,
+                        direccionEnvio: direccionCompletaEnvio,
                         notas: `Compra desde PhoneSpot - ${new Date().toLocaleString()}`
                     };
                     
@@ -1067,6 +1275,70 @@
                 }
             }
         }
+        
+        /**
+         * 🔧 Función de emergencia para resetear el carrito
+         * Se ejecuta si hay problemas con el formato del localStorage
+         */
+        function resetearCarritoEmergencia() {
+            console.log('🔧 RESETEO DE EMERGENCIA DEL CARRITO');
+            
+            if (confirm('⚠️ Esto eliminará todos los productos del carrito.\n\n¿Estás seguro de continuar?')) {
+                // Limpiar todas las variantes del carrito
+                localStorage.removeItem('carritoCell');
+                localStorage.removeItem('carritoCell_legacy');
+                localStorage.removeItem('carrito'); // Por si existe versión antigua
+                
+                console.log('✅ Carrito limpiado completamente');
+                
+                // Recargar la página
+                window.location.reload();
+            }
+        }
+        
+        /**
+         * 🛠️ Función de diagnóstico (usar en consola del navegador)
+         * Uso: diagnosticarCarrito()
+         */
+        window.diagnosticarCarrito = function() {
+            console.log('🔍 DIAGNÓSTICO DEL CARRITO');
+            console.log('==========================');
+            
+            const carritoStr = localStorage.getItem('carritoCell');
+            console.log('1. Carrito raw exists:', !!carritoStr);
+            
+            if (carritoStr) {
+                console.log('2. Carrito raw (primeros 200 chars):', carritoStr.substring(0, 200));
+                
+                try {
+                    const carritoData = JSON.parse(carritoStr);
+                    console.log('3. Carrito parseado exitosamente:', carritoData);
+                    console.log('4. Tipo:', typeof carritoData);
+                    console.log('5. Es Array?:', Array.isArray(carritoData));
+                    
+                    if (carritoData.timestamp) {
+                        console.log('6. Tiene timestamp:', new Date(carritoData.timestamp));
+                        console.log('7. Tiene productos:', carritoData.productos);
+                        console.log('8. Cantidad de productos:', carritoData.productos?.length || 0);
+                    } else if (Array.isArray(carritoData)) {
+                        console.log('6. Formato array directo');
+                        console.log('7. Cantidad de productos:', carritoData.length);
+                    }
+                } catch (error) {
+                    console.error('❌ Error al parsear:', error);
+                }
+            } else {
+                console.log('2. No hay datos en localStorage');
+            }
+            
+            console.log('==========================');
+            console.log('💡 Para resetear el carrito, ejecuta: resetearCarritoEmergencia()');
+        };
+        
+        // Mensaje en consola para desarrolladores
+        console.log('%c🛠️ HERRAMIENTAS DE DEBUG DISPONIBLES', 'color: #0066cc; font-size: 14px; font-weight: bold;');
+        console.log('%cEjecuta diagnosticarCarrito() para ver el estado del carrito', 'color: #666;');
+        console.log('%cEjecuta resetearCarritoEmergencia() para limpiar el carrito', 'color: #666;');
     </script>
 </body>
 </html>

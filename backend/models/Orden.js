@@ -80,7 +80,7 @@ const ordenSchema = new mongoose.Schema({
     // ✅ INFORMACIÓN DE ENVÍO
     metodoEnvio: {
         type: String,
-        enum: ['retiro', 'envio-10km', 'envio-40km'],
+        enum: ['retiro', 'envio', 'envio-10km', 'envio-40km'], // 'envio' es genérico (cálculo dinámico)
         default: 'retiro'
     },
     costoEnvio: {

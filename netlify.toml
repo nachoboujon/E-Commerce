@@ -7,6 +7,8 @@
   
 [build.environment]
   NODE_VERSION = "18"
+  # ✅ Backend de Railway (ya configurado en JavaScript/config.js)
+  BACKEND_URL = "https://phonespot-backend-production.up.railway.app/api"
 
 # Variables de entorno para el frontend
 # (El backend está en Railway.app: https://phonespot-backend-production.up.railway.app)

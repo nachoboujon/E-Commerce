@@ -219,8 +219,7 @@ async function enviarEmailConfirmacionCompra(orden, usuario) {
                         <p style="margin: 0; font-size: 14px;">
                             <strong>📦 Método de Envío:</strong><br>
                             ${orden.metodoEnvio === 'retiro' ? '🏪 Retiro en tienda - GRATIS' : 
-                              orden.metodoEnvio === 'envio-10km' ? '🚚 Envío hasta 10km - ARS $3.000' :
-                              orden.metodoEnvio === 'envio-40km' ? '🚛 Envío 10-40km - ARS $5.000' : 'No especificado'}
+                              `🚚 Envío a domicilio - ${orden.costoEnvio === 0 ? 'GRATIS' : `ARS $${orden.costoEnvio.toLocaleString()}`}`}
                         </p>
                         <p style="margin: 10px 0 0 0; font-size: 14px;">
                             <strong>📍 ${orden.metodoEnvio === 'retiro' ? 'Retiro en:' : 'Dirección de Envío:'}</strong><br>
@@ -339,8 +338,7 @@ async function enviarEmailNotificacionAdmin(orden, usuario) {
                     <div class="info-box" style="${orden.metodoEnvio === 'retiro' ? 'background-color: #e8f5e9; border-left: 4px solid #4caf50;' : 'background-color: #e7f3ff; border-left: 4px solid #0066cc;'}">
                         <p><strong>Método:</strong> ${
                             orden.metodoEnvio === 'retiro' ? '🏪 Retiro en tienda - GRATIS' : 
-                            orden.metodoEnvio === 'envio-10km' ? '🚚 Envío hasta 10km - ARS $3.000' :
-                            orden.metodoEnvio === 'envio-40km' ? '🚛 Envío 10-40km - ARS $5.000' : 'No especificado'
+                            `🚚 Envío a domicilio - ${orden.costoEnvio === 0 ? 'GRATIS' : `ARS $${orden.costoEnvio.toLocaleString()}`}`
                         }</p>
                         <p><strong>${orden.metodoEnvio === 'retiro' ? 'Retiro en:' : 'Dirección de Envío:'}</strong><br>
                         ${orden.direccionEnvio || usuario.direccion || 'No especificada'}</p>

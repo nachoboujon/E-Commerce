@@ -20,6 +20,12 @@
             justify-content: space-between;
             align-items: center;
         }
+        
+        /* Animación pulse para el indicador de conexión */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
 
         .admin-header h2 {
             color: white;
@@ -429,6 +435,13 @@
                 <div>
                     <h2><i class="fas fa-tools"></i> Panel de Administración</h2>
                     <p style="color: rgba(255,255,255,0.8); margin-top: 5px;">Gestiona productos y configuraciones</p>
+                    <!-- 🔗 Indicador de conexión al backend -->
+                    <div id="backend-status" style="margin-top: 10px; padding: 6px 12px; background: rgba(76, 175, 80, 0.2); border-left: 3px solid #4caf50; border-radius: 4px; display: inline-block;">
+                        <small style="color: #4caf50; font-weight: 600; font-size: 12px;">
+                            <i class="fas fa-circle" style="font-size: 8px; animation: pulse 2s infinite;"></i>
+                            <span id="backend-status-text">Conectando...</span>
+                        </small>
+                    </div>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <button class="btn-logout" onclick="window.location.href='../index.html'" style="background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3);">
@@ -1430,6 +1443,52 @@
         // Inicializar
         actualizarEstadisticas();
         cargarTablaProductos();
+        
+        /**
+         * 🔗 Actualizar indicador visual del backend
+         */
+        function actualizarIndicadorBackend() {
+            const statusDiv = document.getElementById('backend-status');
+            const statusText = document.getElementById('backend-status-text');
+            
+            if (!statusDiv || !statusText) return;
+            
+            const backendURL = window.BACKEND_URL;
+            const entorno = window.location.hostname;
+            const esLocalhost = entorno === 'localhost' || entorno === '127.0.0.1';
+            
+            let texto = '';
+            let color = '#4caf50';
+            let bgColor = 'rgba(76, 175, 80, 0.2)';
+            
+            if (backendURL && backendURL.includes('railway.app')) {
+                if (esLocalhost) {
+                    texto = '🌐 Conectado a Railway (viendo producción)';
+                    color = '#ff9800';
+                    bgColor = 'rgba(255, 152, 0, 0.2)';
+                } else {
+                    texto = '🚀 Conectado a Railway (producción)';
+                    color = '#4caf50';
+                    bgColor = 'rgba(76, 175, 80, 0.2)';
+                }
+            } else if (backendURL && backendURL.includes('localhost')) {
+                texto = '🔧 Backend Local (desarrollo)';
+                color = '#2196f3';
+                bgColor = 'rgba(33, 150, 243, 0.2)';
+            } else {
+                texto = '📦 Modo Offline (localStorage)';
+                color = '#9e9e9e';
+                bgColor = 'rgba(158, 158, 158, 0.2)';
+            }
+            
+            statusText.textContent = texto;
+            statusDiv.style.borderColor = color;
+            statusDiv.style.background = bgColor;
+            statusText.style.color = color;
+        }
+        
+        // Ejecutar al cargar la página
+        actualizarIndicadorBackend();
     </script>
 </body>
 </html>

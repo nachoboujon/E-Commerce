@@ -15,6 +15,23 @@ Si los cambios no se visualizan en Netlify o los productos no se actualizan:
 
 ---
 
+## 🔄 Sincronización Netlify ↔️ Localhost
+
+### ¿Quieres ver las compras de Netlify en tu localhost?
+
+✅ **Ya está configurado!** Ambos usan la misma base de datos de Railway.
+
+📖 **Lee la guía completa:** [CONFIGURACION-BACKEND.md](CONFIGURACION-BACKEND.md)
+
+**Resumen rápido:**
+```javascript
+// En JavaScript/config.js (línea 28)
+const USE_RAILWAY_IN_DEV = true;  // ✅ Ver compras de producción en localhost
+const USE_RAILWAY_IN_DEV = false; // 🔧 Desarrollo local aislado
+```
+
+---
+
 ## 📁 Estructura del Proyecto
 
 ```
