@@ -1259,6 +1259,10 @@ function crearTarjetaProducto(producto) {
             <div class="product-image-container">
                 <img src="${rutaImagen}" 
                      alt="${producto.nombre}"
+                     loading="lazy"
+                     decoding="async"
+                     width="300"
+                     height="300"
                      onerror="this.src='https://via.placeholder.com/300x300/000000/FFFFFF/?text=${encodeURIComponent(producto.nombre.substring(0, 20))}'; this.style.objectFit='contain';">
                 <div class="quick-view"><i class="fas fa-eye"></i> Vista Rápida</div>
             </div>

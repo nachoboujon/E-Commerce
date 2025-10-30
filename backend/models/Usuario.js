@@ -70,6 +70,20 @@ const usuarioSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// ============================================================
+// ÍNDICES
+// ============================================================
+
+// Índices únicos ya están en el schema (username, email)
+// Agregar índices para búsquedas comunes
+usuarioSchema.index({ rol: 1, activo: 1 });
+usuarioSchema.index({ verificado: 1 });
+usuarioSchema.index({ createdAt: -1 });
+
+// ============================================================
+// HOOKS
+// ============================================================
+
 // Encriptar contraseña antes de guardar
 usuarioSchema.pre('save', async function(next) {
     // Solo hashear si la contraseña fue modificada

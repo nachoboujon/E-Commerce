@@ -126,9 +126,62 @@ const productoSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Índices para búsquedas rápidas
-productoSchema.index({ categoria: 1, activo: 1 });
-productoSchema.index({ nombre: 'text', descripcion: 'text' });
+// ============================================================
+// ÍNDICES OPTIMIZADOS PARA BÚSQUEDAS RÁPIDAS
+// ============================================================
+
+// Índice compuesto para listados principales
+productoSchema.index({ categoria: 1, activo: 1, stock: -1 });
+
+// Índice para ID (búsquedas individuales)
+productoSchema.index({ id: 1 }, { unique: true });
+
+// Índice de texto para búsqueda
+productoSchema.index({ nombre: 'text', descripcion: 'text', marca: 'text' });
+
+// Índice para ordenamiento por fecha
+productoSchema.index({ createdAt: -1 });
+
+// Índice para filtros comunes
+productoSchema.index({ marca: 1, categoria: 1 });
+productoSchema.index({ precio: 1 });
+productoSchema.index({ enOferta: 1, activo: 1 });
+productoSchema.index({ esNuevo: 1, activo: 1 });
+
+// ============================================================
+// VIRTUALES
+// ============================================================
+
+// Virtual para verificar disponibilidad
+productoSchema.virtual('disponible').get(function() {
+    return this.activo && this.stock > 0;
+});
+
+productoSchema.virtual('descuento').get(function() {
+    if (!this.precioAnterior || this.precioAnterior <= this.precio) return 0;
+    return Math.round(((this.precioAnterior - this.precio) / this.precioAnterior) * 100);
+});
+
+// ============================================================
+// HOOKS
+// ============================================================
+
+// Pre-save validations
+productoSchema.pre('save', function(next) {
+    // Validar que precio anterior sea mayor que precio en ofertas
+    if (this.enOferta && this.precioAnterior) {
+        if (this.precioAnterior <= this.precio) {
+            return next(new Error('Precio anterior debe ser mayor al precio actual en ofertas'));
+        }
+    }
+    
+    // Asegurar que stock no sea negativo
+    if (this.stock < 0) {
+        this.stock = 0;
+    }
+    
+    next();
+});
 
 module.exports = mongoose.model('Producto', productoSchema);
 

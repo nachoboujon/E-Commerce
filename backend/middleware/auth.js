@@ -4,6 +4,7 @@
 
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
+const logger = require('../config/logger');
 
 // Verificar token JWT
 exports.verificarToken = async (req, res, next) => {
@@ -18,8 +19,8 @@ exports.verificarToken = async (req, res, next) => {
             });
         }
         
-        // Verificar token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'phonespot_secret_key_2025');
+        // Verificar token (JWT_SECRET ya validado en server.js)
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
         // Buscar usuario
         const usuario = await Usuario.findById(decoded.id);
@@ -43,15 +44,19 @@ exports.verificarToken = async (req, res, next) => {
         next();
         
     } catch (error) {
-        console.error('❌ Error en verificación de token:', error.message);
-        console.error('🔑 JWT_SECRET configurado:', process.env.JWT_SECRET ? 'SÍ ✅' : 'NO ❌ (usando default)');
-        console.error('📋 Tipo de error:', error.name);
+        logger.error('❌ Error en verificación de token:', {
+            message: error.message,
+            name: error.name,
+            path: req.path
+        });
         
         let mensaje = 'Token inválido o expirado';
         if (error.name === 'JsonWebTokenError') {
             mensaje = 'Token inválido - JWT_SECRET no coincide';
+            logger.warn('🔑 Token con JWT_SECRET incorrecto');
         } else if (error.name === 'TokenExpiredError') {
             mensaje = 'Token expirado - inicie sesión nuevamente';
+            logger.info('⏰ Token expirado para usuario');
         }
         
         return res.status(401).json({

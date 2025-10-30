@@ -6,13 +6,27 @@ const express = require('express');
 const router = express.Router();
 const Producto = require('../models/Producto');
 const { verificarToken, verificarAdmin } = require('../middleware/auth');
+const { cache, clearCacheByPattern } = require('../config/cache');
+const logger = require('../config/logger');
 
 // ============================================================
-// OBTENER TODOS LOS PRODUCTOS
+// OBTENER TODOS LOS PRODUCTOS (CON CACHÉ)
 // ============================================================
 router.get('/', async (req, res) => {
     try {
         const { categoria, busqueda, marca, memoria, condicion, soloActivos = 'true' } = req.query;
+        
+        // Crear clave de caché única basada en los parámetros
+        const cacheKey = `productos_${soloActivos}_${categoria || 'all'}_${busqueda || ''}_${marca || ''}_${memoria || ''}_${condicion || ''}`;
+        
+        // Verificar caché
+        const cachedData = cache.get(cacheKey);
+        if (cachedData) {
+            logger.debug(`✅ Cache HIT: ${cacheKey}`);
+            return res.json({ ...cachedData, cached: true });
+        }
+        
+        logger.debug(`❌ Cache MISS: ${cacheKey}`);
         
         let filtro = {};
         
@@ -24,17 +38,14 @@ router.get('/', async (req, res) => {
             filtro.categoria = categoria;
         }
         
-        // Filtro por marca
         if (marca) {
             filtro.marca = { $regex: marca, $options: 'i' };
         }
         
-        // Filtro por memoria
         if (memoria) {
             filtro.memoria = { $regex: memoria, $options: 'i' };
         }
         
-        // Filtro por condición
         if (condicion) {
             filtro.condicion = condicion;
         }
@@ -46,26 +57,32 @@ router.get('/', async (req, res) => {
             ];
         }
         
-        // Obtener productos y ordenar: primero con stock > 0, luego sin stock
-        const productos = await Producto.find(filtro).sort({ 
-            stock: -1,  // Primero los que tienen stock
-            fechaCreacion: -1 
-        });
+        // Obtener productos con .lean() para mejor rendimiento
+        const productos = await Producto
+            .find(filtro)
+            .sort({ stock: -1, fechaCreacion: -1 })
+            .lean(); // Documentos planos, más rápido
         
         // Separar productos con y sin stock
         const conStock = productos.filter(p => p.stock > 0);
         const sinStock = productos.filter(p => p.stock === 0);
         
-        res.json({
+        const response = {
             success: true,
             count: productos.length,
-            productos: [...conStock, ...sinStock], // Sin stock al final
+            productos: [...conStock, ...sinStock],
             conStock: conStock.length,
-            sinStock: sinStock.length
-        });
+            sinStock: sinStock.length,
+            cached: false
+        };
+        
+        // Guardar en caché por 10 minutos
+        cache.set(cacheKey, response, 600);
+        
+        res.json(response);
         
     } catch (error) {
-        console.error('Error al obtener productos:', error);
+        logger.error('Error al obtener productos:', { error: error.message });
         res.status(500).json({
             success: false,
             message: 'Error al obtener productos',
