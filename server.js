@@ -362,7 +362,7 @@ const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, () => {
     logger.info('='.repeat(60));
-    logger.info('🚀 PHONESPOT E-COMMERCE SERVER INICIADO');
+    logger.info('🚀 PHONESPOT E-COMMERCE SERVER INICIADO - v1.1');
     logger.info('='.repeat(60));
     logger.info(`   Entorno: ${process.env.NODE_ENV || 'development'}`);
     logger.info(`   Puerto: ${PORT}`);

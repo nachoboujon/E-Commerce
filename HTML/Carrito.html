@@ -1336,13 +1336,24 @@
                 } else {
                     console.log('⚠️ Backend no disponible, usando localStorage...');
                     
-                    // Modo fallback: procesar con localStorage
+                    // ✅ MODO FALLBACK MEJORADO: procesar con localStorage Y persistir
                     const compraExitosa = Productos.procesarCompra(carrito);
                     
                     if (compraExitosa) {
                         // Obtener la última compra registrada
                         const historial = Productos.obtenerHistorialCompras();
                         const ultimaCompra = historial[historial.length - 1];
+                        
+                        // ✅ FORZAR GUARDADO DEL STOCK REDUCIDO
+                        console.log('💾 GUARDANDO STOCK REDUCIDO EN LOCALSTORAGE...');
+                        const productosActualizados = Productos.obtenerProductos();
+                        localStorage.setItem('productosPhoneSpot', JSON.stringify(productosActualizados));
+                        console.log('✅ Stock actualizado y guardado persistentemente');
+                        
+                        // ✅ DISPARAR EVENTO DE ACTUALIZACIÓN PARA QUE LA UI SE REFRESQUE
+                        window.dispatchEvent(new CustomEvent('productosActualizados', { 
+                            detail: { productos: productosActualizados, origen: 'offline-compra' } 
+                        }));
                         
                         // Enviar emails al administrador y cliente
                         if (window.EmailService) {
@@ -1362,11 +1373,9 @@
                         localStorage.removeItem('carritoCell');
                         localStorage.removeItem('carritoCell_legacy');
                         
-                        // ⚠️ NO sincronizar desde backend en modo offline
-                        // El stock ya fue reducido en localStorage por Productos.procesarCompra()
-                        console.log('✅ Compra procesada en modo offline - Stock reducido en localStorage');
+                        console.log('✅ Compra procesada en modo offline - Stock reducido y persistido');
                         
-                        // Redirigir al inicio
+                        // Redirigir al inicio (el evento ya actualizó la UI)
                         window.location.href = '../index.html';
                     } else {
                         alert('❌ Error al procesar la compra. Por favor, intenta nuevamente.');
