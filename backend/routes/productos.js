@@ -171,6 +171,10 @@ router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
         Object.assign(producto, req.body);
         await producto.save();
         
+        // ✅ INVALIDAR CACHÉ
+        const clearedKeys = clearCacheByPattern('productos');
+        logger.info(`🧹 Caché invalidado al actualizar producto: ${clearedKeys} keys`);
+        
         res.json({
             success: true,
             message: 'Producto actualizado exitosamente',
@@ -178,7 +182,7 @@ router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error al actualizar producto:', error);
+        logger.error('Error al actualizar producto:', { error: error.message });
         res.status(500).json({
             success: false,
             message: 'Error al actualizar producto',
@@ -205,13 +209,17 @@ router.delete('/:id', verificarToken, verificarAdmin, async (req, res) => {
         producto.activo = false;
         await producto.save();
         
+        // ✅ INVALIDAR CACHÉ
+        const clearedKeys = clearCacheByPattern('productos');
+        logger.info(`🧹 Caché invalidado al eliminar producto: ${clearedKeys} keys`);
+        
         res.json({
             success: true,
             message: 'Producto eliminado exitosamente'
         });
         
     } catch (error) {
-        console.error('Error al eliminar producto:', error);
+        logger.error('Error al eliminar producto:', { error: error.message });
         res.status(500).json({
             success: false,
             message: 'Error al eliminar producto',
@@ -246,6 +254,10 @@ router.patch('/:id/stock', verificarToken, verificarAdmin, async (req, res) => {
         producto.stock = stock;
         await producto.save();
         
+        // ✅ INVALIDAR CACHÉ
+        const clearedKeys = clearCacheByPattern('productos');
+        logger.info(`🧹 Caché invalidado al actualizar stock: ${clearedKeys} keys`);
+        
         res.json({
             success: true,
             message: 'Stock actualizado exitosamente',
@@ -253,7 +265,7 @@ router.patch('/:id/stock', verificarToken, verificarAdmin, async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error al actualizar stock:', error);
+        logger.error('Error al actualizar stock:', { error: error.message });
         res.status(500).json({
             success: false,
             message: 'Error al actualizar stock',

@@ -11,6 +11,8 @@ const {
     enviarEmailConfirmacionCompra, 
     enviarEmailNotificacionAdmin 
 } = require('../services/emailService');
+const { clearCacheByPattern } = require('../config/cache');
+const logger = require('../config/logger');
 
 // ============================================================
 // CREAR ORDEN (requiere autenticación)
@@ -73,8 +75,14 @@ router.post('/', verificarToken, async (req, res) => {
             // ✅ REDUCIR STOCK AL FINALIZAR LA COMPRA (crear orden)
             producto.stock -= item.cantidad;
             await producto.save();
+            logger.info(`📦 Stock reducido: ${producto.nombre} - Cantidad: ${item.cantidad} - Stock restante: ${producto.stock}`);
             console.log(`📦 Stock reducido: ${producto.nombre} - Cantidad: ${item.cantidad} - Stock restante: ${producto.stock}`);
         }
+        
+        // ✅ INVALIDAR CACHÉ DE PRODUCTOS (para que se refleje el nuevo stock)
+        const clearedKeys = clearCacheByPattern('productos');
+        logger.info(`🧹 Caché de productos invalidado: ${clearedKeys} keys eliminadas`);
+        console.log(`🧹 Caché invalidado: ${clearedKeys} keys de productos`);
         
         // Calcular envío y total
         const envio = costoEnvio || 0; // ✅ Costo de envío según método seleccionado

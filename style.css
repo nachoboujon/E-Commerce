@@ -395,39 +395,41 @@ body {
 
 
 /* =================================================================
-   PRODUCTOS - GRID MINIMALISTA
+   PRODUCTOS - GRID PERFECTO (3 POR FILA EN DESKTOP)
    ================================================================= */
 .ContentProducts {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px;
+    grid-template-columns: 1fr;
+    gap: 20px;
     padding: 10px;
     max-width: 100%;
 }
 
-/* Mejora para resoluciones específicas */
-@media (min-width: 1400px) {
-    .ContentProducts {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (min-width: 1024px) and (max-width: 1399px) {
-    .ContentProducts {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-    .ContentProducts {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
+/* 📱 Mobile: 1 columna */
 @media (max-width: 767px) {
     .ContentProducts {
         grid-template-columns: 1fr;
+        gap: 18px;
+    }
+}
+
+/* 📱 Tablet: 2 columnas */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .ContentProducts {
+        grid-template-columns: repeat(2, 1fr);
         gap: 20px;
+    }
+}
+
+/* 💻 Desktop: SIEMPRE 3 columnas (PERFECTO) */
+@media (min-width: 1024px) {
+    .ContentProducts {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 22px !important;
+    }
+    
+    .container {
+        max-width: 1600px; /* Limitar ancho para mantener proporción */
     }
 }
 
@@ -511,11 +513,11 @@ body {
     }
 }
 
-/* Contenedor de imagen */
+/* Contenedor de imagen - OPTIMIZADO */
 .product-image-container {
     position: relative;
     width: 100%;
-    height: 300px;
+    height: 240px; /* Reducido de 300px a 240px */
     overflow: hidden;
     background: var(--crl-off-white);
     border-bottom: 1px solid var(--crl-lighter-gray);
@@ -523,7 +525,7 @@ body {
 
 @media (max-width: 768px) {
     .product-image-container {
-        height: 250px;
+        height: 220px;
     }
 }
 
@@ -564,19 +566,19 @@ body {
 
 
 /* =================================================================
-   INFORMACIÓN DEL PRODUCTO
+   INFORMACIÓN DEL PRODUCTO - COMPACTO
    ================================================================= */
 .ProductInfo {
-    padding: 22px;
+    padding: 16px 18px; /* Reducido de 22px */
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px; /* Reducido de 10px */
     flex: 1;
 }
 
 @media (max-width: 768px) {
     .ProductInfo {
-        padding: 18px;
+        padding: 16px;
     }
 }
 
@@ -632,46 +634,47 @@ body {
     display: inline-block;
 }
 
-/* ========== VARIANTES DE PRODUCTO ========== */
+/* ========== VARIANTES DE PRODUCTO - COMPACTO ========== */
 .product-variant {
-    margin: 12px 0;
+    margin: 6px 0; /* Reducido de 12px */
     padding: 0;
 }
 
 .product-variant label {
     display: block;
-    font-size: 13px;
+    font-size: 12px; /* Reducido de 13px */
     font-weight: 600;
     color: var(--crl-black);
-    margin-bottom: 6px;
+    margin-bottom: 4px; /* Reducido de 6px */
 }
 
 .product-variant label i {
-    margin-right: 6px;
-    color: var(--crl-primary);
+    margin-right: 5px;
+    font-size: 11px;
+    color: var(--crl-black);
 }
 
 .variant-selector {
     width: 100%;
-    padding: 10px 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 8px 10px; /* Reducido de 10px 12px */
+    border: 1px solid #e0e0e0; /* Reducido de 2px */
+    border-radius: 6px; /* Reducido de 8px */
+    font-size: 13px; /* Reducido de 14px */
     font-weight: 500;
     color: var(--crl-black);
     background-color: #fff;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .variant-selector:hover {
-    border-color: var(--crl-primary);
+    border-color: var(--crl-black);
 }
 
 .variant-selector:focus {
     outline: none;
-    border-color: var(--crl-primary);
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    border-color: var(--crl-black);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08); /* Reducido */
 }
 
 /* ========== BANNER VENTA MAYORISTA ========== */
@@ -743,10 +746,10 @@ body {
     50% { transform: translateY(-5px); }
 }
 
-/* Footer del producto */
+/* Footer del producto - COMPACTO */
 .product-footer {
     margin-top: auto;
-    padding-top: 18px;
+    padding-top: 12px; /* Reducido de 18px */
     border-top: 1px solid var(--crl-lighter-gray);
 }
 
@@ -754,7 +757,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 10px; /* Reducido de 16px */
 }
 
 .ProductPrice {
