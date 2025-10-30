@@ -7,8 +7,7 @@
     <!-- Favicon circular -->
     <link rel="icon" type="image/png" href="../IMG/favicon.png?v=2">
     <link rel="stylesheet" href="../style.css?v=3.4">
-    <link rel="stylesheet" href="../responsive-pro.css?v=3.1">
-    <link rel="stylesheet" href="../Style/responsive.css?v=3.1">
+    <link rel="stylesheet" href="../Style/responsive-pro.css?v=1.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
@@ -166,6 +165,15 @@
             });
         });
         
+        // 🔄 Listener para actualización automática de productos desde backend
+        window.addEventListener('productosActualizados', function(e) {
+            console.log('🔄 Productos actualizados desde', e.detail.origen, '- Re-renderizando catálogo...');
+            if (window.Productos) {
+                const productosAccesorios = Productos.obtenerProductosPorCategoria('Accesorios');
+                Productos.renderizarProductos(productosAccesorios, 'ContentProducts');
+            }
+        });
+        
         // 🔄 Listener para actualización automática del catálogo
         window.addEventListener('carritoActualizado', function(e) {
             console.log('🔄 Carrito actualizado, recargando catálogo...');
@@ -176,10 +184,11 @@
         });
         
         // Cargar productos de la categoría Accesorios
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             if (window.Productos) {
-                const productosAccesorios = Productos.obtenerProductosPorCategoria('Accesorios');
-                Productos.renderizarProductos(productosAccesorios, 'ContentProducts');
+                const productosAccesorios = await Productos.cargarProductosDesdeBackend();
+                const accesorios = productosAccesorios.filter(p => p.categoria === 'Accesorios');
+                Productos.renderizarProductos(accesorios, 'ContentProducts');
             }
             
             // Actualizar botón de autenticación

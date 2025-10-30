@@ -183,6 +183,15 @@
             });
         });
         
+        // 🔄 Listener para actualización automática de productos desde backend
+        window.addEventListener('productosActualizados', function(e) {
+            console.log('🔄 Productos actualizados desde', e.detail.origen, '- Re-renderizando catálogo...');
+            if (window.Productos) {
+                const productosCelulares = Productos.obtenerProductosPorCategoria('Celulares');
+                Productos.renderizarProductos(productosCelulares, 'ContentProducts');
+            }
+        });
+        
         // 🔄 Listener para actualización automática del catálogo
         window.addEventListener('carritoActualizado', function(e) {
             console.log('🔄 Carrito actualizado, recargando catálogo...');
@@ -193,10 +202,11 @@
         });
         
         // Cargar productos al iniciar
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // Cargar productos de la categoría Celulares
             if (window.Productos) {
-                const productosCelulares = Productos.obtenerProductosPorCategoria('Celulares');
+                const productosActuales = await Productos.cargarProductosDesdeBackend();
+                const productosCelulares = productosActuales.filter(p => p.categoria === 'Celulares');
                 Productos.renderizarProductos(productosCelulares, 'ContentProducts');
             }
             

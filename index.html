@@ -180,6 +180,14 @@
         });
     </script>
     <script>
+        // 🔄 Listener para actualización automática de productos desde backend
+        window.addEventListener('productosActualizados', function(e) {
+            console.log('🔄 Productos actualizados desde', e.detail.origen, '- Re-renderizando UI...');
+            if (window.Productos) {
+                Productos.renderizarProductos(e.detail.productos);
+            }
+        });
+        
         // Actualizar UI según el rol del usuario
         document.addEventListener('DOMContentLoaded', async function() {
             // Cargar productos dinámicamente (primero intentar desde backend)
