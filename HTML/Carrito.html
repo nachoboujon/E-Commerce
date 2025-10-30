@@ -81,6 +81,17 @@
         .carrito-item:last-child {
             border-bottom: none;
         }
+        
+        /* ⚠️ ALERTAS DE STOCK */
+        .carrito-item.stock-agotado {
+            border-left: 4px solid #f44336;
+            background: #ffebee;
+        }
+        
+        .carrito-item.stock-limitado {
+            border-left: 4px solid #ff9800;
+            background: #fff3e0;
+        }
 
         .carrito-item-imagen {
             width: 120px;
@@ -571,8 +582,20 @@
         });
 
         // Cargar productos del carrito
-        function cargarCarrito() {
+        async function cargarCarrito() {
             console.log('🔄 Cargando carrito...');
+            
+            // 🔄 SINCRONIZAR STOCK DESDE BACKEND AL CARGAR CARRITO
+            if (window.BACKEND_DISPONIBLE && window.APIService) {
+                console.log('🔄 Sincronizando stock desde backend...');
+                try {
+                    await APIService.sincronizarProductos(true);
+                    console.log('✅ Stock actualizado desde MongoDB');
+                } catch (error) {
+                    console.warn('⚠️ No se pudo sincronizar stock:', error);
+                }
+            }
+            
             const carritoStr = localStorage.getItem('carritoCell');
             console.log('📦 Carrito raw:', carritoStr ? carritoStr.substring(0, 100) + '...' : 'null');
             
@@ -668,8 +691,37 @@
                     imagenSrc = '../' + imagenSrc;
                 }
                 
+                // ✅ VERIFICAR STOCK REAL DEL PRODUCTO
+                let stockReal = producto.stock || 0; // Stock del carrito (puede estar desactualizado)
+                let mensajeStock = '';
+                let alertaStock = '';
+                
+                if (window.Productos) {
+                    const productoActual = Productos.obtenerProductoPorId(producto.id);
+                    if (productoActual) {
+                        stockReal = productoActual.stock;
+                        
+                        // Verificar si hay stock suficiente
+                        if (stockReal === 0) {
+                            mensajeStock = `<p style="color: #f44336; font-weight: 600; font-size: 13px; margin-top: 8px;">
+                                ⚠️ PRODUCTO SIN STOCK - Ya no está disponible
+                            </p>`;
+                            alertaStock = 'stock-agotado';
+                        } else if (stockReal < producto.cantidad) {
+                            mensajeStock = `<p style="color: #ff9800; font-weight: 600; font-size: 13px; margin-top: 8px;">
+                                ⚠️ Stock limitado: Solo quedan ${stockReal} unidades disponibles
+                            </p>`;
+                            alertaStock = 'stock-limitado';
+                        } else {
+                            mensajeStock = `<p style="color: #4caf50; font-size: 12px; margin-top: 8px;">
+                                ✅ Stock disponible: ${stockReal} unidades
+                            </p>`;
+                        }
+                    }
+                }
+                
                 return `
-                <div class="carrito-item">
+                <div class="carrito-item ${alertaStock}">
                     <div class="carrito-item-imagen">
                         <img src="${imagenSrc}" alt="${producto.nombre}" onerror="this.src='https://via.placeholder.com/120x120/000000/FFFFFF/?text=Producto'">
                     </div>
@@ -684,6 +736,7 @@
                                 ${producto.varianteSeleccionada.memoria ? `<span>💾 ${producto.varianteSeleccionada.memoria}</span>` : ''}
                             </p>
                         ` : ''}
+                        ${mensajeStock}
                         
                         <div class="cantidad-control">
                             <button onclick="cambiarCantidad(${index}, -1)">
@@ -1052,7 +1105,7 @@
         }
 
         // Finalizar compra
-        function finalizarCompra() {
+        async function finalizarCompra() {
             const sesion = Auth ? Auth.obtenerSesion() : null;
             
             if (!sesion) {
@@ -1072,6 +1125,18 @@
             console.log('🔐 Token JWT presente:', sesion.token ? 'Sí ✅' : 'No (modo offline)');
             if (sesion.token) {
                 console.log('🔑 Token (primeros 30 chars):', sesion.token.substring(0, 30) + '...');
+            }
+            
+            // 🔄 SINCRONIZAR STOCK DESDE BACKEND ANTES DE VALIDAR
+            if (window.BACKEND_DISPONIBLE && window.APIService) {
+                console.log('🔄 Sincronizando stock desde backend antes de validar...');
+                try {
+                    await APIService.sincronizarProductos(true); // Forzar sincronización
+                    console.log('✅ Stock sincronizado correctamente');
+                } catch (error) {
+                    console.warn('⚠️ No se pudo sincronizar stock:', error);
+                    // Continuar de todas formas
+                }
             }
             
             const carritoStr = localStorage.getItem('carritoCell');
