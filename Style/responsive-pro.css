@@ -1,0 +1,725 @@
+/* =================================================================
+   🎨 PHONESPOT RESPONSIVE CSS - PROFESSIONAL EDITION
+   Mobile-First Approach | Optimizado para todas las pantallas
+   ================================================================= */
+
+/* =================================================================
+   BREAKPOINTS SISTEMA
+   ================================================================= */
+/*
+   - Mobile:        320px - 480px
+   - Mobile Large:  481px - 767px
+   - Tablet:        768px - 1024px
+   - Desktop:       1025px - 1440px
+   - Large Desktop: 1441px+
+*/
+
+/* =================================================================
+   BASE RESPONSIVE (Mobile First - 320px+)
+   ================================================================= */
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Mejora de touch en móviles */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button, a {
+    touch-action: manipulation;
+}
+
+/* =================================================================
+   MOBILE MENU (Hamburger)
+   ================================================================= */
+.mobile-menu-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    width: 50px;
+    height: 50px;
+    background: var(--crl-black);
+    color: var(--crl-white);
+    border: none;
+    border-radius: 12px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-menu-btn i {
+    font-size: 22px;
+}
+
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Prevenir scroll cuando el menú está abierto */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* =================================================================
+   📱 MOBILE (320px - 767px)
+   ================================================================= */
+@media (max-width: 767px) {
+    /* Botón hamburguesa visible */
+    .mobile-menu-btn {
+        display: flex;
+    }
+    
+    /* Container principal */
+    .container {
+        flex-direction: column;
+    }
+    
+    /* Sidebar móvil */
+    .container aside {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        width: 85%;
+        max-width: 300px;
+        height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        overflow-y: auto;
+    }
+    
+    .container aside.active {
+        left: 0;
+    }
+    
+    /* Logo en mobile */
+    .logo-container {
+        padding: 20px 15px !important;
+        margin-bottom: 25px !important;
+    }
+    
+    .logo-image {
+        width: 80px !important;
+        height: 80px !important;
+    }
+    
+    .logo-container h1 {
+        font-size: 22px !important;
+    }
+    
+    /* Navegación móvil */
+    .container aside nav {
+        padding: 0 10px;
+    }
+    
+    .botonCategory, .botonCarrito {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+    
+    /* Main content móvil */
+    .container main {
+        width: 100%;
+        padding: 80px 15px 20px 15px !important;
+        min-height: 100vh;
+    }
+    
+    /* Header principal */
+    .main-header {
+        flex-direction: column;
+        align-items: stretch !important;
+        padding: 20px !important;
+        gap: 15px !important;
+    }
+    
+    .main-header h2 {
+        font-size: 24px !important;
+    }
+    
+    /* Barra de búsqueda */
+    .search-bar {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Grid de productos */
+    .ContentProducts {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+        padding: 5px !important;
+    }
+    
+    /* Tarjetas de producto */
+    .Product {
+        max-width: 100%;
+    }
+    
+    .product-image-container {
+        height: 250px !important;
+    }
+    
+    .ProductInfo {
+        padding: 18px !important;
+    }
+    
+    .ProductInfo h3 {
+        font-size: 17px !important;
+    }
+    
+    .ProductPrice {
+        font-size: 22px !important;
+    }
+    
+    /* Banner mayorista */
+    .banner-mayorista {
+        padding: 15px !important;
+        margin: 0 0 20px 0 !important;
+    }
+    
+    .banner-mayorista h3 {
+        font-size: 16px !important;
+    }
+    
+    .banner-mayorista p {
+        font-size: 12px !important;
+    }
+    
+    /* Footer en sidebar */
+    .footer-content {
+        padding-top: 20px !important;
+    }
+    
+    .footerText {
+        font-size: 11px !important;
+    }
+    
+    /* ========== CARRITO RESPONSIVE ========== */
+    .carrito-contenido {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+    
+    .carrito-item {
+        grid-template-columns: 100px 1fr !important;
+        grid-template-rows: auto auto;
+        gap: 15px !important;
+        padding: 15px !important;
+    }
+    
+    .carrito-item-imagen {
+        width: 100px !important;
+        height: 100px !important;
+    }
+    
+    .carrito-item-info {
+        grid-column: 1 / -1;
+    }
+    
+    .carrito-item-acciones {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .carrito-resumen {
+        position: static !important;
+        width: 100% !important;
+        margin-top: 20px;
+    }
+    
+    /* Método de envío */
+    .envio-section {
+        padding: 15px !important;
+    }
+    
+    /* Campos de dirección */
+    .direccion-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* ========== FORMULARIOS (Login, Registro, Perfil) ========== */
+    .auth-container,
+    .form-container {
+        padding: 20px 15px !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+    }
+    
+    .auth-header h2,
+    .form-container h2 {
+        font-size: 24px !important;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 12px !important;
+        font-size: 15px !important;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        padding: 14px !important;
+        font-size: 15px !important;
+    }
+    
+    /* ========== ADMIN PANEL ========== */
+    .admin-header {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+    
+    .admin-stats {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+    
+    .stat-card {
+        padding: 20px !important;
+    }
+    
+    /* Tablas admin */
+    .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        font-size: 13px !important;
+    }
+    
+    th, td {
+        padding: 8px 10px !important;
+        white-space: nowrap;
+    }
+    
+    .btn-sm {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+    }
+    
+    /* Tabs admin */
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+    
+    .tab {
+        font-size: 13px !important;
+        padding: 10px 15px !important;
+    }
+    
+    /* ========== PERFIL ========== */
+    .perfil-container {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .perfil-sidebar {
+        position: static !important;
+        width: 100% !important;
+        margin-bottom: 20px;
+    }
+    
+    /* ========== CONTACTO ========== */
+    .contacto-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .mapa-container {
+        height: 300px !important;
+    }
+}
+
+/* =================================================================
+   📱 MOBILE SMALL (320px - 480px)
+   ================================================================= */
+@media (max-width: 480px) {
+    html {
+        font-size: 14px;
+    }
+    
+    .mobile-menu-btn {
+        width: 45px;
+        height: 45px;
+        top: 15px;
+        left: 15px;
+    }
+    
+    .mobile-menu-btn i {
+        font-size: 20px;
+    }
+    
+    .container main {
+        padding: 70px 12px 15px 12px !important;
+    }
+    
+    .main-header {
+        padding: 15px !important;
+    }
+    
+    .main-header h2 {
+        font-size: 20px !important;
+    }
+    
+    .ProductInfo h3 {
+        font-size: 15px !important;
+    }
+    
+    .ProductPrice {
+        font-size: 20px !important;
+    }
+    
+    .carrito-item {
+        padding: 12px !important;
+    }
+    
+    .cantidad-control button {
+        width: 32px !important;
+        height: 32px !important;
+    }
+}
+
+/* =================================================================
+   💻 TABLET (768px - 1024px)
+   ================================================================= */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container aside {
+        width: 250px;
+    }
+    
+    .logo-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .container main {
+        padding: 30px 25px !important;
+    }
+    
+    .ContentProducts {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px;
+    }
+    
+    .carrito-contenido {
+        grid-template-columns: 1.5fr 1fr;
+    }
+    
+    .admin-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* =================================================================
+   🖥️ DESKTOP (1025px - 1440px)
+   ================================================================= */
+@media (min-width: 1025px) and (max-width: 1440px) {
+    .container aside {
+        width: 280px;
+    }
+    
+    .container main {
+        padding: 35px 40px;
+    }
+    
+    .ContentProducts {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 25px;
+    }
+}
+
+/* =================================================================
+   🖥️ LARGE DESKTOP (1441px+)
+   ================================================================= */
+@media (min-width: 1441px) {
+    .container {
+        max-width: 1920px;
+    }
+    
+    .container aside {
+        width: 300px;
+    }
+    
+    .container main {
+        padding: 45px 60px !important;
+    }
+    
+    .ContentProducts {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 30px;
+    }
+    
+    .main-header h2 {
+        font-size: 32px;
+    }
+}
+
+/* =================================================================
+   📱 LANDSCAPE MODE (Móvil horizontal)
+   ================================================================= */
+@media (max-height: 500px) and (orientation: landscape) {
+    .container aside {
+        width: 200px !important;
+        padding: 15px !important;
+    }
+    
+    .logo-container {
+        padding: 10px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .logo-image {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    
+    .botonCategory,
+    .botonCarrito {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .footer-content {
+        padding-top: 15px !important;
+    }
+    
+    .footerText {
+        font-size: 10px !important;
+        margin-bottom: 8px !important;
+    }
+}
+
+/* =================================================================
+   ♿ ACCESIBILIDAD
+   ================================================================= */
+/* Mejora para usuarios con preferencia de reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Modo oscuro del sistema */
+@media (prefers-color-scheme: dark) {
+    /* Aquí puedes agregar estilos para dark mode si lo deseas */
+}
+
+/* =================================================================
+   🎯 UTILIDADES RESPONSIVE
+   ================================================================= */
+
+/* Ocultar en móvil */
+@media (max-width: 767px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* Mostrar solo en móvil */
+.show-mobile {
+    display: none !important;
+}
+
+@media (max-width: 767px) {
+    .show-mobile {
+        display: block !important;
+    }
+}
+
+/* Ocultar en tablet */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .hide-tablet {
+        display: none !important;
+    }
+}
+
+/* Ocultar en desktop */
+@media (min-width: 1025px) {
+    .hide-desktop {
+        display: none !important;
+    }
+}
+
+/* Texto truncado */
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Scroll horizontal suave */
+.scroll-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--crl-gray) var(--crl-off-white);
+}
+
+.scroll-x::-webkit-scrollbar {
+    height: 8px;
+}
+
+.scroll-x::-webkit-scrollbar-track {
+    background: var(--crl-off-white);
+}
+
+.scroll-x::-webkit-scrollbar-thumb {
+    background: var(--crl-gray);
+    border-radius: 4px;
+}
+
+/* Container responsive */
+.container-fluid {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+@media (min-width: 768px) {
+    .container-fluid {
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+}
+
+@media (min-width: 1025px) {
+    .container-fluid {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}
+
+/* Grid responsive automático */
+.grid-auto {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 480px) {
+    .grid-auto {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (min-width: 768px) {
+    .grid-auto {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+}
+
+@media (min-width: 1025px) {
+    .grid-auto {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+    }
+}
+
+/* Flex responsive */
+.flex-wrap-mobile {
+    display: flex;
+}
+
+@media (max-width: 767px) {
+    .flex-wrap-mobile {
+        flex-direction: column;
+    }
+}
+
+/* Espaciado responsive */
+.spacing-mobile-sm {
+    padding: 10px;
+}
+
+@media (min-width: 768px) {
+    .spacing-mobile-sm {
+        padding: 20px;
+    }
+}
+
+@media (min-width: 1025px) {
+    .spacing-mobile-sm {
+        padding: 30px;
+    }
+}
+
+/* =================================================================
+   🎨 ANIMACIONES RESPONSIVE
+   ================================================================= */
+@media (max-width: 767px) {
+    /* Reducir animaciones en móvil para mejor performance */
+    .Product {
+        animation: none !important;
+    }
+    
+    .Product:hover {
+        transform: translateY(-2px) !important;
+    }
+}
+
+/* =================================================================
+   🖨️ PRINT STYLES
+   ================================================================= */
+@media print {
+    .mobile-menu-btn,
+    .mobile-overlay,
+    .container aside,
+    .botonCarrito,
+    .footer-content,
+    .btn-eliminar,
+    .search-bar {
+        display: none !important;
+    }
+    
+    .container main {
+        width: 100% !important;
+        padding: 0 !important;
+    }
+    
+    .Product {
+        page-break-inside: avoid;
+    }
+}
+
