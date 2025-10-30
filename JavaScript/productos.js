@@ -624,8 +624,12 @@ function procesarCompra(carrito) {
     if (todoOk) {
         console.log('✅ Compra procesada correctamente');
         
-        // Guardar historial de compra
-        guardarHistorialCompra(carrito);
+        // ✨ CALCULAR CARGO MAYORISTA
+        const totalProductos = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+        const cargoMayorista = totalProductos < 3 && totalProductos > 0 ? totalProductos * 10 : 0;
+        
+        // Guardar historial de compra CON cargo mayorista
+        guardarHistorialCompra(carrito, cargoMayorista);
     }
     
     return todoOk;
@@ -665,9 +669,16 @@ function obtenerMovimientosStock() {
 /**
  * Guardar historial de compra
  */
-function guardarHistorialCompra(carrito) {
+function guardarHistorialCompra(carrito, cargoMayorista = 0) {
     const historial = JSON.parse(localStorage.getItem('historialCompras') || '[]');
     const sesion = window.Auth ? Auth.obtenerSesion() : null;
+    
+    // ✨ CALCULAR CARGO MAYORISTA SI NO SE PROPORCIONA
+    const totalProductos = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+    const cargoMayoristaCalculado = cargoMayorista || (totalProductos < 3 && totalProductos > 0 ? totalProductos * 10 : 0);
+    
+    const subtotalProductos = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+    const totalFinal = subtotalProductos + cargoMayoristaCalculado;
     
     const compra = {
         id: 'compra-' + Date.now(),
@@ -683,7 +694,9 @@ function guardarHistorialCompra(carrito) {
             color: item.varianteSeleccionada?.color || item.color || null,
             memoria: item.varianteSeleccionada?.memoria || item.memoria || null
         })),
-        total: carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0)
+        subtotal: subtotalProductos,
+        cargoMayorista: cargoMayoristaCalculado,  // ✅ AGREGAR CARGO MAYORISTA
+        total: totalFinal  // ✅ TOTAL CON CARGO INCLUIDO
     };
     
     historial.push(compra);
@@ -694,6 +707,8 @@ function guardarHistorialCompra(carrito) {
     }
     
     localStorage.setItem('historialCompras', JSON.stringify(historial));
+    
+    console.log(`💰 Compra guardada - Subtotal: $${subtotalProductos} + Cargo minorista: $${cargoMayoristaCalculado} = Total: $${totalFinal}`);
 }
 
 /**

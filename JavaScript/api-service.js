@@ -356,15 +356,15 @@ async function sincronizarProductosDesdeBackend(forzar = false) {
         
         if (productos && productos.length > 0) {
             // Guardar en localStorage
-            localStorage.setItem('productosPhoneSpot', JSON.stringify(productos));
-            console.log('✅ Productos sincronizados desde backend:', productos.length);
+                localStorage.setItem('productosPhoneSpot', JSON.stringify(productos));
+                console.log('✅ Productos sincronizados desde backend:', productos.length);
             
             // ✅ DISPARAR EVENTO PARA QUE LA UI SE ACTUALICE
             window.dispatchEvent(new CustomEvent('productosActualizados', { 
                 detail: { productos, origen: 'backend' } 
             }));
             
-            return true;
+                return true;
         }
         
         return false;

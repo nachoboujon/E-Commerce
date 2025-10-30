@@ -1345,6 +1345,11 @@
                 totalVentas += compra.total;
                 const fecha = new Date(compra.fecha);
                 
+                // ✨ CALCULAR CARGO MAYORISTA
+                const cargoMayorista = compra.cargoMayorista || 0;
+                const subtotalProductos = compra.subtotal || compra.productos.reduce((sum, p) => sum + p.subtotal, 0);
+                const totalFinal = compra.total;
+                
                 html += `
                     <div style="background: ${index % 2 === 0 ? '#fff' : '#f9f9f9'}; padding: 20px; margin-bottom: 15px; border-radius: 10px; border: 1px solid var(--crl-lighter-gray);">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
@@ -1358,7 +1363,7 @@
                                 </p>
                             </div>
                             <div style="text-align: right;">
-                                <p style="font-size: 24px; font-weight: 700; color: var(--crl-black);">USD $${compra.total.toLocaleString()}</p>
+                                <p style="font-size: 24px; font-weight: 700; color: var(--crl-black);">USD $${totalFinal.toLocaleString()}</p>
                                 <p style="color: var(--crl-gray); font-size: 13px;">${compra.productos.length} producto(s)</p>
                             </div>
                         </div>
@@ -1370,6 +1375,18 @@
                                     <span style="font-weight: 600;">USD $${p.subtotal.toLocaleString()}</span>
                                 </div>
                             `).join('')}
+                            
+                            ${cargoMayorista > 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 12px 0; margin-top: 10px; border-top: 2px solid #f0f0f0; background: #fff3cd; padding: 10px; border-radius: 6px;">
+                                    <span style="font-weight: 600; color: #856404;"><i class="fas fa-exclamation-triangle"></i> Cargo por compra minorista (< 3 productos)</span>
+                                    <span style="font-weight: 700; color: #856404;">+USD $${cargoMayorista.toLocaleString()}</span>
+                                </div>
+                            ` : ''}
+                            
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0; margin-top: 10px; border-top: 2px solid var(--crl-black); font-size: 16px;">
+                                <span style="font-weight: 700;">TOTAL</span>
+                                <span style="font-weight: 700; color: var(--crl-black);">USD $${totalFinal.toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
                 `;

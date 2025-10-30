@@ -1318,7 +1318,7 @@
                             APIService.sincronizarProductos(true).then(() => {
                                 console.log('✅ Stock sincronizado desde MongoDB después de la compra');
                                 // Redirigir al inicio después de sincronizar
-                                window.location.href = '../index.html';
+                            window.location.href = '../index.html';
                             }).catch(() => {
                                 // Si falla la sincronización, redirigir igual
                                 console.warn('⚠️ No se pudo sincronizar productos, continuando...');
